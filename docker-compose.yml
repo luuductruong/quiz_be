@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  quiz_be_proto_builder:
+    build:
+      context: ./
+      dockerfile: ./docker-compose/proto/Dockerfile
+    container_name: quiz_be_proto_builder
+    volumes:
+      - ./:/go/src/
+    working_dir: /go/src/
+    command: 'make proto'
+  quiz_be_postgres:
+    image: postgres:15
+    container_name: quiz_be_postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: quiz_be
+      POSTGRES_PASSWORD: quiz_be
+      POSTGRES_DB: quiz_be
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data: # lưu dữ liệu khi chạy docker compose down
