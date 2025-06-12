@@ -1,0 +1,10 @@
+http:
+  host: localhost
+  port: 8000
+
+logger:
+  output: stdout
+  file:
+  level: debug
+  format: text
+  expecting_line: true
