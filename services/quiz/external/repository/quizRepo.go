@@ -3,14 +3,15 @@ package repository
 import (
 	"github.com/quiz_be/services/core/context"
 	quizDomain "github.com/quiz_be/services/core/domain/quiz"
+	"github.com/quiz_be/services/core/helper"
 	"github.com/quiz_be/services/core/helper/sql/query"
+	"gorm.io/gorm"
 )
 
 type quizGorm struct {
-	QuizID      string `gorm:"primary_key"`
-	Content     string
-	QuestionIDs []string
-	Questions   []*questionGrom
+	QuizID        string `gorm:"primary_key"`
+	Content       string
+	QuizQuestions []*quizQuestionGorm `gorm:"foreignKey:QuizID;references:QuizID"`
 }
 
 func mapQuizToDomain(source *quizGorm) *quizDomain.Quiz {
@@ -18,9 +19,9 @@ func mapQuizToDomain(source *quizGorm) *quizDomain.Quiz {
 		return nil
 	}
 	return &quizDomain.Quiz{
-		QuizID:    source.QuizID,
-		Content:   source.Content,
-		Questions: nil,
+		QuizID:        source.QuizID,
+		Content:       source.Content,
+		QuizQuestions: helper.MapList(source.QuizQuestions, mapQuizQuestionToDomain),
 	}
 }
 
@@ -45,6 +46,16 @@ func (q *quizRepo) Query(ctx context.Context) quizDomain.QuizQuery {
 
 func (q *quizQuery) ByQuizID(quizID string) quizDomain.QuizQuery {
 	return query.Where(q, "quiz_id = ?", quizID)
+}
+
+func (q *quizQuery) WithQuizQuestion(questionID string) quizDomain.QuizQuery {
+	q.SetDB(q.GetDB().Preload("QuizQuestions", func(db *gorm.DB) *gorm.DB {
+		if len(questionID) > 0 {
+			return db.Where("question_id = ?", questionID).Preload("Question")
+		}
+		return db.Preload("Question")
+	}))
+	return q
 }
 
 func (q *quizQuery) Limit(limit int) quizDomain.QuizQuery {

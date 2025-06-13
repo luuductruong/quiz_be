@@ -11,11 +11,14 @@ func (d *domain) SubmitAnswer(ctx context.Context, inp *model.SubmitAnswerReq) (
 	d.logger.DebugCtx(ctx, "SubmitAnswer")
 	// validate
 	if inp.UserID == "" || inp.QuizID == "" || inp.QuestionID == "" || inp.AnswerTitle == "" {
-		d.logger.DebugCtx(ctx, "input empty")
-		return nil, errors.New("input empty")
+		d.logger.DebugCtx(ctx, "invalid input")
+		return nil, errors.New("invalid input")
 	}
 	// find existsQuiz
-	existsQuiz, err := d.quizRepo.Query(ctx).ByQuizID(inp.QuizID).Result()
+	existsQuiz, err := d.quizRepo.Query(ctx).
+		ByQuizID(inp.QuizID).
+		WithQuizQuestion(inp.QuestionID). // embed a question to quiz_question
+		Result()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "query fail")
 		return nil, err
@@ -26,13 +29,9 @@ func (d *domain) SubmitAnswer(ctx context.Context, inp *model.SubmitAnswerReq) (
 	}
 	// find question
 	var existsQuestion *model.Question
-	for _, question := range existsQuiz.Questions {
-		if question.QuestionID == inp.QuestionID {
-			existsQuestion, err = d.questionRepo.Query(ctx).ByQuestionID(question.QuestionID).Result()
-			if err != nil {
-				d.logger.ErrorCtx(ctx, err, "query question fail")
-				return nil, err
-			}
+	for _, quizQuestion := range existsQuiz.QuizQuestions {
+		if quizQuestion.QuestionID == inp.QuestionID && quizQuestion.Question != nil {
+			existsQuestion = quizQuestion.Question
 			break
 		}
 	}

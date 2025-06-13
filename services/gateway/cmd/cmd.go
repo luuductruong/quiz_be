@@ -4,13 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/quiz_be/services/core/infra/logger"
+	"google.golang.org/grpc"
 	"net"
 	"net/http"
 	"time"
 
 	coreMdw "github.com/quiz_be/services/core/application/middleware"
+	quizService "github.com/quiz_be/services/core/application/quiz/service"
 	"github.com/quiz_be/services/core/infra/config"
+	grpcHelper "github.com/quiz_be/services/core/infra/grpc"
+	"github.com/quiz_be/services/core/infra/logger"
 	gatewayMdw "github.com/quiz_be/services/gateway/middleware"
 )
 
@@ -18,6 +21,7 @@ var (
 	appConfig *Config
 
 	// client connect
+	quizConn *grpc.ClientConn
 )
 
 func Run() {
@@ -27,7 +31,10 @@ func Run() {
 	logger.SetDefault(log)
 
 	// client connect
-
+	quizConn, err = grpcHelper.NewClient(appConfig.Quiz)
+	if err != nil {
+		logger.Default.Panic("can't connect to quiz: ", err)
+	}
 	// end client connect
 
 	// make context with cancel
@@ -41,7 +48,10 @@ func Run() {
 	gMux := runtime.NewServeMux()
 
 	// register client connect
-
+	err = quizService.RegisterQuizServiceHandler(ctx, gMux, quizConn)
+	if err != nil {
+		logger.Default.Panic("can't register quiz: ", err)
+	}
 	// end register client connect
 
 	mux := http.NewServeMux()

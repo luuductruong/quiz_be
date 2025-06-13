@@ -3,7 +3,7 @@ export DATABASE_PORT := 5432
 export DATABASE_USER := quiz_be
 export DATABASE_PASSWORD := quiz_be
 
-service:
+dbs:
 	if [ "$${DATABASE_NAME}" != "" ]; then \
 	    docker run --rm --network=quiz_be_default \
 	        -e PGPASSWORD=$${DATABASE_PASSWORD} \
@@ -17,12 +17,12 @@ service:
 	        psql -h $${DATABASE_HOST} -U $${DATABASE_USER} -d postgres \
 	        -c "CREATE DATABASE $${DATABASE_NAME};"; \
 	    if [ "$${ENV}" != "" ]; then \
-	        cp $$(pwd)/db/seed/$${ENV}/*.sql $$(pwd)/db/migration; \
+	        cp $$(pwd)/external/db/seed/$${ENV}/*.sql $$(pwd)/external/db/migration; \
 	    else \
-	        cp $$(pwd)/db/seed/dev/*.sql $$(pwd)/db/migration; \
+	        cp $$(pwd)/external/db/seed/dev/*.sql $$(pwd)/external/db/migration; \
 	    fi; \
 	    docker run --rm --network=quiz_be_default --name flyway \
-	        -v $$(pwd)/db/migration:/flyway/sql \
+	        -v $$(pwd)/external/db/migration:/flyway/sql \
 	        -v $$(pwd)/db:/flyway/conf \
 	        flyway/flyway \
 	        -url=jdbc:postgresql://$${DATABASE_HOST}:$${DATABASE_PORT}/$${DATABASE_NAME} \

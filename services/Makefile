@@ -5,4 +5,6 @@ $(SUBDIRS):
 
 dbs: $(SUBDIRS)
 
-.PHONY: dbs $(SUBDIRS)
+flyway: $(SUBDIRS)
+
+.PHONY: dbs flyway $(SUBDIRS)

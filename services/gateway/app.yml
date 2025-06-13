@@ -2,6 +2,10 @@ http:
   host: localhost
   port: 8000
 
+quiz:
+  host: localhost
+  port: 8001
+
 logger:
   output: stdout
   file:

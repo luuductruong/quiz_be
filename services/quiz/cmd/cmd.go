@@ -37,8 +37,9 @@ func Run() {
 	}
 
 	quizDomain := domain.NewDomain(&domain.QuizDomainParam{
-		QuizRepo:     repo.NewQuizRepo(),
-		QuestionRepo: repo.NewQuestionRepo(),
+		QuizRepo:         repo.NewQuizRepo(),
+		QuestionRepo:     repo.NewQuestionRepo(),
+		QuizQuestionRepo: repo.NewQuizQuestionRepo(),
 	})
 	grpcHandler = handler.NewHandler(quizDomain)
 

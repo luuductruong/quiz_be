@@ -9,5 +9,5 @@ type Config struct {
 	Http   *cfn.Client    `config:"http"`
 	Logger *logger.Config `config:"logger"`
 	// microservices
-	Product *cfn.Client `config:"product"`
+	Quiz *cfn.Client `config:"quiz"`
 }

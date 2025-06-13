@@ -1,6 +1,9 @@
 package repository
 
 import (
+	"encoding/json"
+	"gorm.io/datatypes"
+
 	"github.com/quiz_be/services/core/context"
 	quizDomain "github.com/quiz_be/services/core/domain/quiz"
 	"github.com/quiz_be/services/core/helper/sql/query"
@@ -10,7 +13,7 @@ type questionGrom struct {
 	QuestionID    string
 	Content       string
 	CorrectAnswer string
-	Answers       []*answerGorm `json:"answers"`
+	Answers       datatypes.JSON `json:"answers"`
 }
 
 type answerGorm struct {
@@ -22,11 +25,13 @@ func mapQuestionToDomain(source *questionGrom) *quizDomain.Question {
 	if source == nil {
 		return nil
 	}
+	var answers []*quizDomain.Answer
+	_ = json.Unmarshal(source.Answers, &answers)
 	return &quizDomain.Question{
 		QuestionID:    source.QuestionID,
 		Content:       source.Content,
 		CorrectAnswer: source.CorrectAnswer,
-		Answers:       nil,
+		Answers:       answers,
 	}
 }
 
