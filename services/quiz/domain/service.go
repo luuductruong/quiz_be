@@ -9,6 +9,9 @@ type QuizDomainParam struct {
 	QuizRepo         quiz.QuizRepo
 	QuestionRepo     quiz.QuestionRepo
 	QuizQuestionRepo quiz.QuizQuestionRepo
+	UserRepo         quiz.UserRepo
+	UserAnswerRepo   quiz.UserAnswerRepo
+	ScoreRepo        quiz.ScoreRepo
 }
 
 type domain struct {
@@ -16,6 +19,9 @@ type domain struct {
 	quizRepo         quiz.QuizRepo
 	questionRepo     quiz.QuestionRepo
 	quizQuestionRepo quiz.QuizQuestionRepo
+	userRepo         quiz.UserRepo
+	userAnswerRepo   quiz.UserAnswerRepo
+	scoreRepo        quiz.ScoreRepo
 }
 
 func NewDomain(param *QuizDomainParam) quiz.Service {
@@ -24,5 +30,8 @@ func NewDomain(param *QuizDomainParam) quiz.Service {
 		quizRepo:         param.QuizRepo,
 		questionRepo:     param.QuestionRepo,
 		quizQuestionRepo: param.QuizQuestionRepo,
+		userRepo:         param.UserRepo,
+		userAnswerRepo:   param.UserAnswerRepo,
+		scoreRepo:        param.ScoreRepo,
 	}
 }

@@ -13,6 +13,7 @@ type questionGrom struct {
 	QuestionID    string
 	Content       string
 	CorrectAnswer string
+	Score         uint
 	Answers       datatypes.JSON `json:"answers"`
 }
 
@@ -31,6 +32,7 @@ func mapQuestionToDomain(source *questionGrom) *quizDomain.Question {
 		QuestionID:    source.QuestionID,
 		Content:       source.Content,
 		CorrectAnswer: source.CorrectAnswer,
+		Score:         source.Score,
 		Answers:       answers,
 	}
 }

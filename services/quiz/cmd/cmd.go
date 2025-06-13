@@ -40,6 +40,9 @@ func Run() {
 		QuizRepo:         repo.NewQuizRepo(),
 		QuestionRepo:     repo.NewQuestionRepo(),
 		QuizQuestionRepo: repo.NewQuizQuestionRepo(),
+		UserRepo:         repo.NewUserRepo(),
+		UserAnswerRepo:   repo.NewUserAnswerRepo(),
+		ScoreRepo:        repo.NewScoreRepo(),
 	})
 	grpcHandler = handler.NewHandler(quizDomain)
 

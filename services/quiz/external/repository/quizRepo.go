@@ -10,7 +10,7 @@ import (
 
 type quizGorm struct {
 	QuizID        string `gorm:"primary_key"`
-	Content       string
+	Title         string
 	QuizQuestions []*quizQuestionGorm `gorm:"foreignKey:QuizID;references:QuizID"`
 }
 
@@ -20,7 +20,7 @@ func mapQuizToDomain(source *quizGorm) *quizDomain.Quiz {
 	}
 	return &quizDomain.Quiz{
 		QuizID:        source.QuizID,
-		Content:       source.Content,
+		Title:         source.Title,
 		QuizQuestions: helper.MapList(source.QuizQuestions, mapQuizQuestionToDomain),
 	}
 }

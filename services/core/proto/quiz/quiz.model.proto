@@ -15,7 +15,8 @@ message Quiz {
 message Question {
   string question_id = 1;
   string content = 2;
-  repeated Answer answers = 3;
+  int32 score = 3;
+  repeated Answer answers = 4;
 }
 
 message Answer {
