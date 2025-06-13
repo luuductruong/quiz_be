@@ -23,7 +23,7 @@ dbs:
 	    fi; \
 	    docker run --rm --network=quiz_be_default --name flyway \
 	        -v $$(pwd)/external/db/migration:/flyway/sql \
-	        -v $$(pwd)/db:/flyway/conf \
+	        -v $$(pwd)/external/db:/flyway/conf \
 	        flyway/flyway \
 	        -url=jdbc:postgresql://$${DATABASE_HOST}:$${DATABASE_PORT}/$${DATABASE_NAME} \
 	        -user=$${DATABASE_USER} -password=$${DATABASE_PASSWORD} \

@@ -10,11 +10,7 @@
     make deps
 ```
 
-* **init db for each service**
+* **init db**
 ```shell
-    make ${service_name}
-```
-*Example:*
-```shell
-    make quiz
+    make dbs
 ```
