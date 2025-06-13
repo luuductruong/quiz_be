@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package service;
+
+option go_package = "github.com/quiz_be/services/core/application/quiz/service";
+
+import "quiz/quiz.dto.proto";
+import "google/api/annotations.proto";
+
+
+service QuizService {
+  rpc SubmitAnswer(dto.SubmitAnswerReq) returns (dto.SubmitAnswerRes) {
+    option (google.api.http) = {
+      post: "/v1/quiz/submit-answer"
+      body: "*"
+    };
+  }
+}

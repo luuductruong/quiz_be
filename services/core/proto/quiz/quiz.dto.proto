@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option go_package = "github.com/quiz_be/services/core/application/quiz/dto";
+
+import "quiz/quiz.model.proto";
+
+package dto;
+
+message SubmitAnswerReq {
+  string user_id = 1;
+  string quiz_id = 2;
+  string question_id = 3;
+  string answer_title = 4;
+}
+
+message SubmitAnswerRes {
+}

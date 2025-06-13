@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/quiz_be/services/core/application/quiz/model";
+
+package model;
+
+message Quiz {
+  string quiz_id = 1;
+  string title = 2;
+  repeated Question questions = 3;
+}
+
+message Question {
+  string question_id = 1;
+  string content = 2;
+  repeated Answer answers = 3;
+}
+
+message Answer {
+  string title = 1;
+  string content = 2;
+}
