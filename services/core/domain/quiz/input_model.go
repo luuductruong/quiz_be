@@ -9,4 +9,6 @@ type SubmitAnswerReq struct {
 
 type GetLeaderboardReq struct {
 	QuizID string `json:"quiz_id"`
+	Limit  int    `json:"limit"`
+	Page   int    `json:"page"`
 }

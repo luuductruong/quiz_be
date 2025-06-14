@@ -90,3 +90,7 @@ func UniqBy[T any, U comparable](collection []T, iteratee func(T) U) []T {
 
 	return result
 }
+
+func GetOffset(page, limit int) int {
+	return page*limit - limit
+}

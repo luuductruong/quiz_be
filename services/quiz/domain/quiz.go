@@ -155,3 +155,29 @@ func (d *domain) processUserAnswer(
 	}
 	return nil
 }
+
+func (d *domain) GetLeaderboard(ctx context.Context, inp *model.GetLeaderboardReq) ([]*model.Score, int32, error) {
+	d.logger.DebugCtx(ctx, "GetLeaderboard")
+	if inp.QuizID == "" || inp.Page < 0 || inp.Limit < 0 {
+		d.logger.DebugCtx(ctx, "invalid input")
+		return nil, 0, errors.New("invalid input")
+	}
+	offset := helper.GetOffset(inp.Page, inp.Limit)
+	scores, err := d.scoreRepo.Query(ctx).
+		ByQuizID(inp.QuizID).
+		Offset(offset).Limit(inp.Limit).
+		OrderByScore(true).
+		WithUser().
+		ResultList()
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "query failed")
+		return nil, 0, err
+	}
+	// get count
+	total, err := d.scoreRepo.Query(ctx).ByQuizID(inp.QuizID).Count()
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "count query failed")
+		return nil, 0, err
+	}
+	return scores, int32(total), nil
+}

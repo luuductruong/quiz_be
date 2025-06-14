@@ -83,7 +83,14 @@ type ScoreQuery interface {
 	ByID(id string) ScoreQuery
 	ByUserID(userID string) ScoreQuery
 	ByQuizID(quizID string) ScoreQuery
+	WithUser() ScoreQuery
+	// paging
+	Limit(limit int) ScoreQuery
+	Offset(offset int) ScoreQuery
+	// ordering
+	OrderByScore(desc bool) ScoreQuery
 	// result
 	Result() (*Score, error)
 	ResultList() ([]*Score, error)
+	Count() (int, error)
 }

@@ -83,6 +83,29 @@ func (s *scoreQuery) ByUserID(userID string) quizDomain.ScoreQuery {
 func (s *scoreQuery) ByQuizID(quizID string) quizDomain.ScoreQuery {
 	return query.Where(s, "quiz_id = ?", quizID)
 }
+func (s *scoreQuery) WithUser() quizDomain.ScoreQuery {
+	s.SetDB(s.GetDB().Preload("User"))
+	return s
+}
+
+// paging
+func (s *scoreQuery) Limit(limit int) quizDomain.ScoreQuery {
+	return query.Limit(s, limit)
+}
+
+func (s *scoreQuery) Offset(offset int) quizDomain.ScoreQuery {
+	return query.Offset(s, offset)
+}
+
+// ordering
+func (s *scoreQuery) OrderByScore(desc bool) quizDomain.ScoreQuery {
+	ord := ""
+	if desc {
+		ord = " desc"
+	}
+	s.SetDB(s.GetDB().Order("score" + ord))
+	return s
+}
 
 func (s *scoreQuery) Result() (*quizDomain.Score, error) {
 	return query.Result(s, mapScoreToDomain)
@@ -90,4 +113,8 @@ func (s *scoreQuery) Result() (*quizDomain.Score, error) {
 
 func (s *scoreQuery) ResultList() ([]*quizDomain.Score, error) {
 	return query.ResultList(s, mapScoreToDomain)
+}
+
+func (s *scoreQuery) Count() (int, error) {
+	return query.Count(s)
 }

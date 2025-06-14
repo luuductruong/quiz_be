@@ -92,6 +92,21 @@ func Limit[I any](q I, limit int) I {
 	return q
 }
 
+func Offset[I any](q I, offset int) I {
+	db := any(q).(BaseQuery)
+	db.SetDB(db.GetDB().Offset(offset))
+	return q
+}
+
+func Count(bq BaseQuery) (int, error) {
+	var count int64
+	err := bq.GetDB().Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+
 func getOrderByStr(field string, desc bool) string {
 	if desc {
 		return fmt.Sprintf("%s desc NULLS LAST", field)

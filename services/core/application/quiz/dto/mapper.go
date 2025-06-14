@@ -4,6 +4,7 @@ import (
 	"github.com/quiz_be/services/core/application/quiz/model"
 	"github.com/quiz_be/services/core/domain/quiz"
 	"github.com/quiz_be/services/core/helper"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func MapQuizFromDomain(source *quiz.Quiz) *model.Quiz {
@@ -47,4 +48,19 @@ func mapAnswerFromDomain(source *quiz.Answer) *model.Answer {
 		Title:   source.Title,
 		Content: source.Content,
 	}
+}
+
+func MapScoreFromDomain(source *quiz.Score) *model.Score {
+	if source == nil {
+		return nil
+	}
+	rs := &model.Score{
+		UserId:   source.UserID,
+		Score:    int32(source.Score),
+		UpdateAt: timestamppb.New(source.UpdatedAt),
+	}
+	if source.User != nil {
+		rs.UserName = source.User.UserName
+	}
+	return rs
 }

@@ -19,8 +19,12 @@ message SubmitAnswerRes {
 
 message GetLeaderboardReq {
   string quiz_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
 }
 
 message GetLeaderboardRes {
   repeated model.Score leaderboard = 1;
+  int32 page = 2;
+  int32 total = 3;
 }

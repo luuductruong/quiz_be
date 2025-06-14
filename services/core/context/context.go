@@ -20,6 +20,7 @@ type Context interface {
 	GetDbTx() *gorm.DB
 	GetTracerId() string
 	Clone() Context
+	GetPageAndLimit() (int, int)
 }
 
 func (c *ctxInternal) Clone() Context {
@@ -47,4 +48,36 @@ func (c *ctxInternal) GetDbTx() *gorm.DB {
 
 func (c *ctxInternal) GetTracerId() string {
 	return middleware.TracerFromContext(c)
+}
+
+func (c *ctxInternal) GetPageAndLimit() (int, int) {
+	return c.GetPage(), c.GetLimit()
+}
+
+func (c *ctxInternal) GetPage() int {
+	page := 1
+	pageCtx := middleware.PageFromCtx(c)
+	if pageCtx != nil {
+		page = pageCtx.GetPage()
+	}
+	if page < 1 {
+		page = 1
+	}
+	return page
+}
+
+func (c *ctxInternal) GetLimit() int {
+	limit := 20
+	pageCtx := middleware.PageFromCtx(c)
+	if pageCtx != nil {
+		limit = pageCtx.GetLimit()
+	}
+	if limit == -1 {
+		limit = 20 // default
+	} else if limit == 0 {
+		limit = 1
+	} else if limit > 100 {
+		limit = 100
+	}
+	return limit
 }
