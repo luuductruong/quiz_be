@@ -16,3 +16,11 @@ message SubmitAnswerReq {
 message SubmitAnswerRes {
   model.Quiz quiz = 1;
 }
+
+message GetLeaderboardReq {
+  string quiz_id = 1;
+}
+
+message GetLeaderboardRes {
+  repeated model.Score leaderboard = 1;
+}

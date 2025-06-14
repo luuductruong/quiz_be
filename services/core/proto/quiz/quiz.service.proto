@@ -15,4 +15,10 @@ service QuizService {
       body: "*"
     };
   }
+  rpc GetLeaderboard(dto.GetLeaderboardReq) returns (dto.GetLeaderboardRes) {
+    option (google.api.http) = {
+      post: "/v1/quiz/leaderboard"
+      body: "*"
+    };
+  };
 }

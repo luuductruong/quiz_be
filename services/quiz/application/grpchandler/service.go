@@ -35,3 +35,19 @@ func (h *handler) SubmitAnswer(ctx context.Context, req *dto.SubmitAnswerReq) (*
 		Quiz: dto.MapQuizFromDomain(q),
 	}, nil
 }
+
+//func (h *handler) GetLeaderboard(ctx context.Context, req *dto.GetLeaderboardReq) (*dto.GetLeaderboardRes, error) {
+//	appCtx := appContext.FromContext(ctx)
+//	q, err := h.quizDomain.SubmitAnswer(appCtx, &quiz.SubmitAnswerReq{
+//		UserID:      req.UserId,
+//		QuizID:      req.QuizId,
+//		QuestionID:  req.QuestionId,
+//		AnswerTitle: req.AnswerTitle,
+//	})
+//	if err != nil {
+//		return nil, err
+//	}
+//	return &dto.SubmitAnswerRes{
+//		Quiz: dto.MapQuizFromDomain(q),
+//	}, nil
+//}

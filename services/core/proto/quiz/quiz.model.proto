@@ -23,3 +23,10 @@ message Answer {
   string title = 1;
   string content = 2;
 }
+
+message Score {
+  string user_id = 1;
+  string user_name = 2;
+  int32 score = 3;
+  google.protobuf.Timestamp update_at = 4;
+}
