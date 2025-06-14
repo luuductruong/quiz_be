@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/protojson"
 	"net"
 	"net/http"
 	"time"
@@ -45,7 +46,20 @@ func Run() {
 	// setup timeout for request
 	runtime.DefaultContextTimeout = 30 * time.Second // for example
 
-	gMux := runtime.NewServeMux()
+	gMux := runtime.NewServeMux(
+		// https://grpc-ecosystem.github.io/grpc-gateway/docs/development/grpc-gateway_v2_migration_guide/
+		// use UseProtoNames = true for JSON snake_case (default is camelCase)
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.HTTPBodyMarshaler{
+			Marshaler: &runtime.JSONPb{
+				MarshalOptions: protojson.MarshalOptions{
+					UseProtoNames:   true,
+					EmitUnpopulated: true,
+				},
+				UnmarshalOptions: protojson.UnmarshalOptions{
+					DiscardUnknown: true,
+				},
+			},
+		}))
 
 	// register client connect
 	err = quizService.RegisterQuizServiceHandler(ctx, gMux, quizConn)
