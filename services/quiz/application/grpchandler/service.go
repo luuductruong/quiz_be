@@ -54,3 +54,17 @@ func (h *handler) GetLeaderboard(ctx context.Context, req *dto.GetLeaderboardReq
 		Total:       total,
 	}, nil
 }
+
+func (h *handler) GetListQuiz(ctx context.Context, req *dto.GetListQuizReq) (*dto.GetListQuizRes, error) {
+	appCtx := appContext.FromContext(ctx)
+	page, limit := appCtx.GetPageAndLimit()
+	listQuiz, total, err := h.quizDomain.GetListQuiz(appCtx, page, limit)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.GetListQuizRes{
+		ListQuiz: helper.MapList(listQuiz, dto.MapQuizFromDomain),
+		Page:     int32(page),
+		Total:    total,
+	}, nil
+}

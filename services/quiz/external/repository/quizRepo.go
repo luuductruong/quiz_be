@@ -62,10 +62,18 @@ func (q *quizQuery) Limit(limit int) quizDomain.QuizQuery {
 	return query.Limit(q, limit)
 }
 
+func (q *quizQuery) Offset(offset int) quizDomain.QuizQuery {
+	return query.Offset(q, offset)
+}
+
 func (q *quizQuery) Result() (*quizDomain.Quiz, error) {
 	return query.Result(q, mapQuizToDomain)
 }
 
 func (q *quizQuery) ResultList() ([]*quizDomain.Quiz, error) {
 	return query.ResultList(q, mapQuizToDomain)
+}
+
+func (q *quizQuery) Count() (int, error) {
+	return query.Count(q)
 }

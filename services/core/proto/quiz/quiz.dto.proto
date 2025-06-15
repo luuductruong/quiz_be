@@ -28,3 +28,14 @@ message GetLeaderboardRes {
   int32 page = 2;
   int32 total = 3;
 }
+
+message GetListQuizReq {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message GetListQuizRes {
+  repeated model.Quiz list_quiz = 1;
+  int32 page = 2;
+  int32 total = 3;
+}

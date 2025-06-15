@@ -72,10 +72,8 @@ func (c *ctxInternal) GetLimit() int {
 	if pageCtx != nil {
 		limit = pageCtx.GetLimit()
 	}
-	if limit == -1 {
+	if limit == -1 || limit == 0 {
 		limit = 20 // default
-	} else if limit == 0 {
-		limit = 1
 	} else if limit > 100 {
 		limit = 100
 	}

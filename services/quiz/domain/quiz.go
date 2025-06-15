@@ -181,3 +181,21 @@ func (d *domain) GetLeaderboard(ctx context.Context, inp *model.GetLeaderboardRe
 	}
 	return scores, int32(total), nil
 }
+
+func (d *domain) GetListQuiz(ctx context.Context, page int, limit int) ([]*model.Quiz, int32, error) {
+	d.logger.DebugCtx(ctx, "GetListQuiz")
+	offset := helper.GetOffset(page, limit)
+	listQuiz, err := d.quizRepo.Query(ctx).
+		Offset(offset).
+		Limit(limit).
+		ResultList()
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "query failed")
+		return nil, 0, err
+	}
+	count, err := d.quizRepo.Query(ctx).Count()
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "count query failed")
+	}
+	return listQuiz, int32(count), err
+}

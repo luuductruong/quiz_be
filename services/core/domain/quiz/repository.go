@@ -12,11 +12,13 @@ type QuizQuery interface {
 	// query
 	ByQuizID(quizID string) QuizQuery
 	Limit(limit int) QuizQuery
+	Offset(offset int) QuizQuery
 	// load
 	WithQuizQuestion(questionID string) QuizQuery
 	// result
 	Result() (*Quiz, error)
 	ResultList() ([]*Quiz, error)
+	Count() (int, error)
 }
 
 type QuestionRepo interface {
