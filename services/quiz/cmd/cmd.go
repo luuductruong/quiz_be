@@ -46,7 +46,7 @@ func Run() {
 	})
 	grpcHandler = handler.NewHandler(quizDomain)
 
-	grpcServe()
+	go grpcServe()
 }
 
 func grpcServe() {
