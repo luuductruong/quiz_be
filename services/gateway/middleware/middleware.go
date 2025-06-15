@@ -11,7 +11,7 @@ func WithCORS(handler http.Handler) http.Handler {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"}, // Use this to allow specific origin hosts, * for matches any origin
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Origin", "Accept", "Authorization", "Title-Type", "X-CSRF-Token", "Signature"},
+		AllowedHeaders:   []string{"Origin", "Accept", "Content-Type", "Authorization", "Title-Type", "X-CSRF-Token", "Signature"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
 	})

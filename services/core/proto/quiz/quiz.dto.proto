@@ -6,11 +6,15 @@ import "quiz/quiz.model.proto";
 
 package dto;
 
+message SelectedQuestionAnswer {
+  string question_id = 1;
+  string answer_title = 2;
+}
+
 message SubmitAnswerReq {
   string user_id = 1;
   string quiz_id = 2;
-  string question_id = 3;
-  string answer_title = 4;
+  repeated SelectedQuestionAnswer select_answers = 3;
 }
 
 message SubmitAnswerRes {

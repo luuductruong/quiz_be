@@ -25,10 +25,14 @@ func NewHandler(quizDomain quiz.Service) service.QuizServiceServer {
 func (h *handler) SubmitAnswer(ctx context.Context, req *dto.SubmitAnswerReq) (*dto.SubmitAnswerRes, error) {
 	appCtx := appContext.FromContext(ctx)
 	q, err := h.quizDomain.SubmitAnswer(appCtx, &quiz.SubmitAnswerReq{
-		UserID:      req.UserId,
-		QuizID:      req.QuizId,
-		QuestionID:  req.QuestionId,
-		AnswerTitle: req.AnswerTitle,
+		UserID: req.UserId,
+		QuizID: req.QuizId,
+		SelectAnswers: helper.MapList(req.SelectAnswers, func(s *dto.SelectedQuestionAnswer) *quiz.SelectedQuestionAnswer {
+			return &quiz.SelectedQuestionAnswer{
+				QuestionID:  s.QuestionId,
+				AnswerTitle: s.AnswerTitle,
+			}
+		}),
 	})
 	if err != nil {
 		return nil, err

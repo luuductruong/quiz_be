@@ -94,3 +94,15 @@ func UniqBy[T any, U comparable](collection []T, iteratee func(T) U) []T {
 func GetOffset(page, limit int) int {
 	return page*limit - limit
 }
+
+// Find search an element in a slice based on a predicate. It returns element and true if element was found.
+func Find[T any](collection []T, predicate func(T) bool) (T, bool) {
+	for _, item := range collection {
+		if predicate(item) {
+			return item, true
+		}
+	}
+
+	var result T
+	return result, false
+}

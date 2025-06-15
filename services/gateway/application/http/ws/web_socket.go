@@ -195,7 +195,11 @@ func (h *WsHub) PushLeaderboardUpdate(quizID string, leaderboard *quizDto.GetLea
 	h.mu.Lock()
 	h.leaderboardCache[quizID] = leaderboard
 	h.mu.Unlock()
-	data, err := json.Marshal(leaderboard.Leaderboard)
+	data, err := json.Marshal(map[string]interface{}{
+		"leaderboard": leaderboard.Leaderboard,
+		"page":        leaderboard.Page,
+		"total":       leaderboard.Total,
+	})
 	if err != nil {
 		log.Printf("Marshal leaderboard error: %v", err)
 		return

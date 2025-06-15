@@ -14,7 +14,7 @@ import (
 func (d *domain) SubmitAnswer(ctx context.Context, inp *model.SubmitAnswerReq) (*model.Quiz, error) {
 	d.logger.DebugCtx(ctx, "SubmitAnswer")
 	// validate
-	if inp.UserID == "" || inp.QuizID == "" || inp.QuestionID == "" || inp.AnswerTitle == "" {
+	if inp.UserID == "" || inp.QuizID == "" || len(inp.SelectAnswers) == 0 {
 		d.logger.DebugCtx(ctx, "invalid input")
 		return nil, errors.New("invalid input")
 	}
@@ -41,31 +41,7 @@ func (d *domain) SubmitAnswer(ctx context.Context, inp *model.SubmitAnswerReq) (
 		d.logger.DebugCtx(ctx, "quiz not found")
 		return nil, errors.New("quiz not found")
 	}
-	// find question
-	var existsQuestion *model.Question
-	for _, quizQuestion := range existsQuiz.QuizQuestions {
-		if quizQuestion.Question != nil && quizQuestion.Question.QuestionID == inp.QuestionID {
-			existsQuestion = quizQuestion.Question
-			break
-		}
-	}
-	if existsQuestion == nil {
-		d.logger.DebugCtx(ctx, "not found question")
-		return nil, errors.New("not found question")
-	}
-	// find answer
-	var selectedAnswer *model.Answer
-	for _, answer := range existsQuestion.Answers {
-		if answer.Title == inp.AnswerTitle {
-			selectedAnswer = answer
-			break
-		}
-	}
-	if selectedAnswer == nil {
-		d.logger.DebugCtx(ctx, "not found answer")
-		return nil, errors.New("not found answer")
-	}
-	err = d.processUserAnswer(ctx, inp.UserID, inp.QuizID, inp.AnswerTitle, existsQuestion)
+	err = d.processUserAnswer(ctx, inp.UserID, existsQuiz, inp.SelectAnswers)
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "processUserAnswer failed")
 		return nil, err
@@ -77,57 +53,74 @@ func (d *domain) SubmitAnswer(ctx context.Context, inp *model.SubmitAnswerReq) (
 // It determines correctness by checking the selected answer against the question's correct answer and adjusts scores.
 func (d *domain) processUserAnswer(
 	ctx context.Context,
-	userID, quizID, selectedAnswer string,
-	question *model.Question,
+	userID string,
+	existsQuiz *model.Quiz,
+	selectedAnswer []*model.SelectedQuestionAnswer,
 ) error {
 	d.logger.DebugCtx(ctx, "processUserAnswer")
-	isCorrect := selectedAnswer == question.CorrectAnswer
 	now := time.Now()
 	// find user answer history
-	userAnswer, err := d.userAnswerRepo.Query(ctx).
+	userAnswers, err := d.userAnswerRepo.Query(ctx).
 		ByUserID(userID).
-		ByQuizID(quizID).
-		ByQuestionID(question.QuestionID).
-		Result()
+		ByQuizID(existsQuiz.QuizID).
+		ResultList()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "query user answer failed")
 		return err
 	}
-	prevCorrect := false
-	scoreChange := 0
-	if userAnswer == nil {
-		userAnswer = &model.UserAnswer{
-			ID:         helper.NewStringUUID(),
-			UserID:     userID,
-			QuizID:     quizID,
-			QuestionID: question.QuestionID,
-			CreatedAt:  now,
+	questions := helper.MapList(existsQuiz.QuizQuestions, func(q *model.QuizQuestion) *model.Question {
+		return q.Question
+	})
+	totalScoreChange := 0
+	for _, ans := range selectedAnswer {
+		question, _ := helper.Find(questions, func(q *model.Question) bool {
+			return q.QuestionID == ans.QuestionID
+		})
+		if question == nil {
+			d.logger.DebugCtx(ctx, "question not found")
+			return errors.New("question not found")
 		}
-		scoreChange = 0
-		if isCorrect {
-			scoreChange = int(question.Score)
-		}
-	} else {
-		prevCorrect = userAnswer.IsCorrect
-		if prevCorrect != isCorrect {
+		isCorrect := ans.AnswerTitle == question.CorrectAnswer
+		prevCorrect := false
+		userAnswer, _ := helper.Find(userAnswers, func(ua *model.UserAnswer) bool {
+			return ua.QuestionID == question.QuestionID
+		})
+		scoreChange := 0
+		if userAnswer == nil {
+			userAnswer = &model.UserAnswer{
+				ID:         helper.NewStringUUID(),
+				UserID:     userID,
+				QuizID:     existsQuiz.QuizID,
+				QuestionID: ans.QuestionID,
+				CreatedAt:  now,
+			}
+			scoreChange = 0
 			if isCorrect {
-				scoreChange = int(question.Score) // from incorrect to correct
-			} else {
-				scoreChange = -int(question.Score) // from correct to incorrect
+				scoreChange = int(question.Score)
+			}
+		} else {
+			prevCorrect = userAnswer.IsCorrect
+			if prevCorrect != isCorrect {
+				if isCorrect {
+					scoreChange = int(question.Score) // from incorrect to correct
+				} else {
+					scoreChange = -int(question.Score) // from correct to incorrect
+				}
 			}
 		}
+		// update user answer
+		userAnswer.SelectedAnswer = ans.AnswerTitle
+		userAnswer.IsCorrect = isCorrect
+		userAnswer.UpdatedAt = now
+		if err := d.userAnswerRepo.Upsert(ctx, userAnswer); err != nil {
+			d.logger.ErrorCtx(ctx, err, "update userAnswer failed")
+			return err
+		}
+		totalScoreChange += scoreChange
 	}
 
-	// update user answer
-	userAnswer.SelectedAnswer = selectedAnswer
-	userAnswer.IsCorrect = isCorrect
-	userAnswer.UpdatedAt = now
-	if err := d.userAnswerRepo.Upsert(ctx, userAnswer); err != nil {
-		d.logger.ErrorCtx(ctx, err, "update userAnswer failed")
-		return err
-	}
 	// find score for user and quiz
-	score, err := d.scoreRepo.Query(ctx).ByQuizID(quizID).ByUserID(userID).Result()
+	score, err := d.scoreRepo.Query(ctx).ByQuizID(existsQuiz.QuizID).ByUserID(userID).Result()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "query score failed")
 		return err
@@ -137,13 +130,13 @@ func (d *domain) processUserAnswer(
 		score = &model.Score{
 			ID:        helper.NewStringUUID(),
 			UserID:    userID,
-			QuizID:    quizID,
-			Score:     max(scoreChange, 0), // không âm nếu lần đầu
+			QuizID:    existsQuiz.QuizID,
+			Score:     max(totalScoreChange, 0), // không âm nếu lần đầu
 			CreatedAt: now,
 		}
 	} else {
 		// update score
-		score.Score += scoreChange
+		score.Score += totalScoreChange
 		if score.Score < 0 {
 			score.Score = 0
 		}
