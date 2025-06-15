@@ -47,3 +47,10 @@ message GetListQuizRes {
 message GetQuizDetailReq {
   string quiz_id = 1;
 }
+
+message GetUserReq {
+}
+
+message GetUserRes {
+  repeated model.User list_user = 1;
+}

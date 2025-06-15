@@ -31,4 +31,9 @@ service QuizService {
       get: "/v1/quiz/{quiz_id}/detail"
     };
   }
+  rpc GetUser(dto.GetUserReq) returns (dto.GetUserRes) {
+    option (google.api.http) = {
+      get: "/v1/quiz/user"
+    };
+  }
 }

@@ -206,3 +206,13 @@ func (d *domain) GetQuizDetail(ctx context.Context, quizID string) (*model.Quiz,
 	}
 	return quiz, nil
 }
+
+func (d *domain) GetUser(ctx context.Context) ([]*model.User, error) {
+	d.logger.DebugCtx(ctx, "GetUser")
+	users, err := d.userRepo.Query(ctx).ResultList()
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "query failed")
+		return nil, err
+	}
+	return users, nil
+}

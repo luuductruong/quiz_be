@@ -64,3 +64,13 @@ func MapScoreFromDomain(source *quiz.Score) *model.Score {
 	}
 	return rs
 }
+
+func MapUserFromDomain(source *quiz.User) *model.User {
+	if source == nil {
+		return nil
+	}
+	return &model.User{
+		UserId:   source.UserID,
+		UserName: source.UserName,
+	}
+}

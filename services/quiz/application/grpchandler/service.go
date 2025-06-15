@@ -82,3 +82,13 @@ func (h *handler) GetQuizDetail(ctx context.Context, req *dto.GetQuizDetailReq) 
 	}
 	return dto.MapQuizFromDomain(q), nil
 }
+func (h *handler) GetUser(ctx context.Context, req *dto.GetUserReq) (*dto.GetUserRes, error) {
+	appCtx := appContext.FromContext(ctx)
+	listUser, err := h.quizDomain.GetUser(appCtx)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.GetUserRes{
+		ListUser: helper.MapList(listUser, dto.MapUserFromDomain),
+	}, nil
+}

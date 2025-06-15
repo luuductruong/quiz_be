@@ -30,3 +30,8 @@ message Score {
   int32 score = 3;
   google.protobuf.Timestamp update_at = 4;
 }
+
+message User {
+  string user_id = 1;
+  string user_name = 2;
+}
