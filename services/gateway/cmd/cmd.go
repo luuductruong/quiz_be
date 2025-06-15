@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/quiz_be/services/gateway/application"
+	"github.com/quiz_be/services/gateway/application/http/ws"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"net"
@@ -23,6 +25,8 @@ var (
 
 	// client connect
 	quizConn *grpc.ClientConn
+	// end client connect
+	hub = ws.NewWsHub()
 )
 
 func Run() {
@@ -67,8 +71,12 @@ func Run() {
 		logger.Default.Panic("can't register quiz: ", err)
 	}
 	// end register client connect
+	httpHandler := application.NewHttpHandler(quizConn, hub)
+
+	gMux.HandlePath("POST", "/v1/quiz/submit-answer", httpHandler.Quiz().SubmitAnswer)
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("/ws", hub.HandleWebSocket)
 	mux.Handle("/", gatewayMdw.WithCORS(gMux))
 	combineMd := gatewayMdw.ChainCombine(coreMdw.WithResponseType())
 	server := http.Server{
