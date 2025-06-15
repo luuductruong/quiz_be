@@ -47,6 +47,9 @@ message GetListQuizRes {
 message GetQuizDetailReq {
   string quiz_id = 1;
 }
+message GetQuizDetailRes {
+  model.Quiz quiz = 1;
+}
 
 message GetUserReq {
 }

@@ -26,11 +26,12 @@ var (
 	// client connect
 	quizConn *grpc.ClientConn
 	// end client connect
-	hub = ws.NewWsHub()
+	hub *ws.WsHub
 )
 
 func Run() {
 	var err error
+	hub = ws.NewWsHub()
 	config.LoadConfig(&appConfig)
 	log := logger.NewLogger(appConfig.Logger)
 	logger.SetDefault(log)
@@ -74,6 +75,7 @@ func Run() {
 	httpHandler := application.NewHttpHandler(quizConn, hub)
 
 	gMux.HandlePath("POST", "/v1/quiz/submit-answer", httpHandler.Quiz().SubmitAnswer)
+	gMux.HandlePath("GET", "/v1/quiz/{quiz_id}/detail", httpHandler.Quiz().GetQuizDetail)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws", hub.HandleWebSocket)

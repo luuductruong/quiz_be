@@ -16,6 +16,7 @@ import (
 )
 
 type HttpHandler interface {
+	GetQuizDetail(w http.ResponseWriter, r *http.Request, params map[string]string)
 	SubmitAnswer(w http.ResponseWriter, r *http.Request, params map[string]string)
 }
 
@@ -35,6 +36,20 @@ type httpHandler struct {
 	handler.BaseHandler
 	service service.QuizServiceClient
 	hub     *ws.WsHub
+}
+
+func (h *httpHandler) GetQuizDetail(w http.ResponseWriter, r *http.Request, params map[string]string) {
+	fn := func(ctx context.Context, req proto.Message, opts ...grpc.CallOption) (proto.Message, error) {
+		reqMapping := req.(*dto.GetQuizDetailReq)
+		reqMapping.QuizId = params["quiz_id"]
+		res, errResp := h.service.GetQuizDetail(ctx, reqMapping, opts...)
+		log.Println("GetQuizDetail return: ", res, "\t err: ", errResp)
+		if errResp == nil && res != nil {
+			go h.getLeaderboardAndUpdateWS(ctx.Clone(), res.QuizId, 1, 10)
+		}
+		return res, errResp
+	}
+	h.HandleReqWithMd(w, r, &dto.GetQuizDetailReq{}, fn)
 }
 
 func (h *httpHandler) SubmitAnswer(w http.ResponseWriter, r *http.Request, params map[string]string) {
@@ -68,7 +83,7 @@ func (h *httpHandler) getLeaderboardAndUpdateWS(ctx context.Context, quizID stri
 	}
 	leaderBoard, err := h.service.GetLeaderboard(ctx, req, grpc.WaitForReady(true))
 	if err == nil && leaderBoard != nil {
-		h.hub.PushLeaderboardUpdate(quizID, leaderBoard)
+		go h.hub.PushLeaderboardUpdate(quizID, leaderBoard)
 	}
 	return
 }

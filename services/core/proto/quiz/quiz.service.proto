@@ -10,12 +10,7 @@ import "google/api/annotations.proto";
 
 
 service QuizService {
-  rpc SubmitAnswer(dto.SubmitAnswerReq) returns (dto.SubmitAnswerRes) {
-    option (google.api.http) = {
-      post: "/v1/quiz/submit-answer"
-      body: "*"
-    };
-  }
+  rpc SubmitAnswer(dto.SubmitAnswerReq) returns (dto.SubmitAnswerRes) {}
   rpc GetLeaderboard(dto.GetLeaderboardReq) returns (dto.GetLeaderboardRes) {
     option (google.api.http) = {
       get: "/v1/quiz/{quiz_id}/leaderboard"
@@ -26,11 +21,7 @@ service QuizService {
       get: "/v1/quiz/list"
     };
   }
-  rpc GetQuizDetail(dto.GetQuizDetailReq) returns (model.Quiz) {
-    option (google.api.http) = {
-      get: "/v1/quiz/{quiz_id}/detail"
-    };
-  }
+  rpc GetQuizDetail(dto.GetQuizDetailReq) returns (model.Quiz) {}
   rpc GetUser(dto.GetUserReq) returns (dto.GetUserRes) {
     option (google.api.http) = {
       get: "/v1/quiz/user"
