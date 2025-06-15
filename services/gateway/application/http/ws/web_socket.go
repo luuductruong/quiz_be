@@ -91,11 +91,11 @@ func (h *WsHub) run() {
 
 // Handle incoming WebSocket connection from client
 func (h *WsHub) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(time.Now(), "\tHandleWebSocket")
+	log.Println(time.Now(), "\tHandleWebSocket")
 	quizID := r.URL.Query().Get("quiz_id")
 	if quizID == "" {
 		log.Printf("Missing quiz_id")
-		//http.Error(w, "Missing quiz_id", http.StatusBadRequest)
+		http.Error(w, "Missing quiz_id", http.StatusBadRequest)
 		return
 	}
 
@@ -119,12 +119,18 @@ func (h *WsHub) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	// 👉 Gửi ping định kỳ từ server
+	done := make(chan struct{})
 	go func() {
 		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
-		for range ticker.C {
-			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				log.Println("Ping error:", err)
+		for {
+			select {
+			case <-ticker.C:
+				if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+					log.Println("Ping error:", err)
+					return
+				}
+			case <-done:
 				return
 			}
 		}
@@ -141,6 +147,7 @@ func (h *WsHub) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Printf("Read error: %v", err)
+			close(done)
 			break
 		}
 		// Optional: xử lý message type
