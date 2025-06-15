@@ -39,3 +39,7 @@ message GetListQuizRes {
   int32 page = 2;
   int32 total = 3;
 }
+
+message GetQuizDetailReq {
+  string quiz_id = 1;
+}

@@ -2,6 +2,7 @@ package grpchandler
 
 import (
 	"context"
+	"github.com/quiz_be/services/core/application/quiz/model"
 	"github.com/quiz_be/services/core/helper"
 
 	"github.com/quiz_be/services/core/application/quiz/dto"
@@ -67,4 +68,13 @@ func (h *handler) GetListQuiz(ctx context.Context, req *dto.GetListQuizReq) (*dt
 		Page:     int32(page),
 		Total:    total,
 	}, nil
+}
+
+func (h *handler) GetQuizDetail(ctx context.Context, req *dto.GetQuizDetailReq) (*model.Quiz, error) {
+	appCtx := appContext.FromContext(ctx)
+	q, err := h.quizDomain.GetQuizDetail(appCtx, req.QuizId)
+	if err != nil {
+		return nil, err
+	}
+	return dto.MapQuizFromDomain(q), nil
 }

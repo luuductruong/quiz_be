@@ -199,3 +199,17 @@ func (d *domain) GetListQuiz(ctx context.Context, page int, limit int) ([]*model
 	}
 	return listQuiz, int32(count), err
 }
+
+func (d *domain) GetQuizDetail(ctx context.Context, quizID string) (*model.Quiz, error) {
+	d.logger.DebugCtx(ctx, "GetQuizDetail")
+	if quizID == "" {
+		d.logger.DebugCtx(ctx, "invalid input")
+		return nil, errors.New("invalid input")
+	}
+	quiz, err := d.quizRepo.Query(ctx).ByQuizID(quizID).WithQuizQuestion("").Result()
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "query failed")
+		return nil, err
+	}
+	return quiz, nil
+}

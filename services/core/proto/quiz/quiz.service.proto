@@ -5,6 +5,7 @@ package service;
 option go_package = "github.com/quiz_be/services/core/application/quiz/service";
 
 import "quiz/quiz.dto.proto";
+import "quiz/quiz.model.proto";
 import "google/api/annotations.proto";
 
 
@@ -23,6 +24,11 @@ service QuizService {
   rpc GetListQuiz(dto.GetListQuizReq) returns (dto.GetListQuizRes) {
     option (google.api.http) = {
       get: "/v1/quiz/list"
+    };
+  }
+  rpc GetQuizDetail(dto.GetQuizDetailReq) returns (model.Quiz) {
+    option (google.api.http) = {
+      get: "/v1/quiz/{quiz_id}/detail"
     };
   }
 }
