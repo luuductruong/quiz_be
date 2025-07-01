@@ -40,6 +40,19 @@ func Upsert[S any, D any](db *gorm.DB, source *S, mapper func(*S) *D) error {
 	return db.Save(mapper(source)).Error
 }
 
+func BatchUpsert[S any, D any](db *gorm.DB, source []*S, mapper func(*S) *D) error {
+	//rowsGroup := helper.ToArrInBatch(source, 500)
+	//for _, rows := range rowsGroup {
+	//	if err := db.Save(helper.MapList(rows, mapper)).Error; err != nil {
+	//		return err
+	//	}
+	//}
+	//
+	//return nil
+	data := helper.MapList(source, mapper)
+	return db.Save(data).Error
+}
+
 func Insert[S any, D any](db *gorm.DB, source *S, mapper func(*S) *D) error {
 	return db.Create(mapper(source)).Error
 }

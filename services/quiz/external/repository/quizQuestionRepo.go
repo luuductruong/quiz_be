@@ -7,9 +7,9 @@ import (
 )
 
 type quizQuestionGorm struct {
-	QuizID     string
-	QuestionID string
-	Question   *questionGrom `gorm:"foreignKey:QuestionID;references:QuestionID"`
+	QuizID     string        `gorm:"primaryKey;column:quiz_id"`
+	QuestionID string        `gorm:"primaryKey;column:question_id"`
+	Question   *questionGrom `gorm:"foreignKey:QuestionID;references:QuestionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
 
 func mapQuizQuestionToDomain(source *quizQuestionGorm) *quizDomain.QuizQuestion {
@@ -20,6 +20,17 @@ func mapQuizQuestionToDomain(source *quizQuestionGorm) *quizDomain.QuizQuestion 
 		QuizID:     source.QuizID,
 		QuestionID: source.QuestionID,
 		Question:   mapQuestionToDomain(source.Question),
+	}
+}
+
+func mapQuizQuestionFromDomain(source *quizDomain.QuizQuestion) *quizQuestionGorm {
+	if source == nil {
+		return nil
+	}
+	return &quizQuestionGorm{
+		QuizID:     source.QuizID,
+		QuestionID: source.QuestionID,
+		//Question:   mapQuestionToDomain(source.Question),
 	}
 }
 
@@ -36,6 +47,13 @@ type quizQuestionRepo struct {
 
 type quizQuestionQuery struct {
 	query.BaseQuery
+}
+
+func (q *quizQuestionRepo) BulkUpsert(ctx context.Context, quizQuestion []*quizDomain.QuizQuestion) error {
+	if len(quizQuestion) == 0 {
+		return nil
+	}
+	return query.BatchUpsert(ctx.GetDbTx(), quizQuestion, mapQuizQuestionFromDomain)
 }
 
 func (q *quizQuestionRepo) Query(ctx context.Context) quizDomain.QuizQuestionQuery {

@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"math/rand"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -25,6 +26,14 @@ func RandString(n int) string {
 	}
 
 	return string(b)
+}
+
+// UpperFirstLetter ...
+func UpperFirstLetter(source string) string {
+	if len(source) == 0 {
+		return source
+	}
+	return strings.ToUpper(source[:1]) + source[1:]
 }
 
 func NewStringUUID() string {

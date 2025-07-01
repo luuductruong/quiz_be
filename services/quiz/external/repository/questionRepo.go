@@ -85,6 +85,10 @@ func (q *questionQuery) ByQuestionID(questionID string) quizDomain.QuestionQuery
 	return query.Where(q, "question_id = ?", questionID)
 }
 
+func (q *questionQuery) ByQuestionIDs(questionIDs []string) quizDomain.QuestionQuery {
+	return query.Where(q, "question_id in ?", questionIDs)
+}
+
 func (q *questionQuery) Limit(limit int) quizDomain.QuestionQuery {
 	return query.Limit(q, limit)
 }

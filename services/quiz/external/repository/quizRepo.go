@@ -30,6 +30,19 @@ func mapQuizToDomain(source *quizGorm) *quizDomain.Quiz {
 	}
 }
 
+func mapQuizFromDomain(source *quizDomain.Quiz) *quizGorm {
+	if source == nil {
+		return nil
+	}
+	return &quizGorm{
+		QuizID: source.QuizID,
+		Title:  source.Title,
+		//QuizQuestions: helper.MapList(source.QuizQuestions, mapQuizQuestionToDomain),
+		CreatedAt: source.CreatedAt,
+		UpdatedAt: source.UpdatedAt,
+	}
+}
+
 func (q quizGorm) TableName() string {
 	return "quiz"
 }
@@ -47,6 +60,10 @@ type quizQuery struct {
 
 func (q *quizRepo) Query(ctx context.Context) quizDomain.QuizQuery {
 	return &quizQuery{query.NewBQ(ctx.GetDbTx().Model(&quizGorm{}))}
+}
+
+func (q *quizRepo) Upsert(ctx context.Context, quiz *quizDomain.Quiz) error {
+	return query.Upsert(ctx.GetDbTx(), quiz, mapQuizFromDomain)
 }
 
 func (q *quizQuery) ByQuizID(quizID string) quizDomain.QuizQuery {

@@ -10,6 +10,80 @@ import (
 )
 
 func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*model.Quiz, error) {
+	d.logger.DebugCtx(ctx, "ManageQuiz: ", inp.QuizID)
+	if inp.Title == "" {
+		d.logger.DebugCtx(ctx, "invalid input title")
+		return nil, errors.New("invalid input title")
+	}
+	inp.Title = helper.UpperFirstLetter(inp.Title)
+	if len(inp.QuestionIDs) == 0 {
+		d.logger.DebugCtx(ctx, "invalid input questions")
+		return nil, errors.New("invalid input questions")
+	}
+	// find questions
+	inpQuestion := len(inp.QuestionIDs)
+	inp.QuestionIDs = helper.Unique(inp.QuestionIDs)
+	if len(inp.QuestionIDs) != inpQuestion {
+		d.logger.DebugCtx(ctx, "duplicated input questions")
+		return nil, errors.New("duplicated input questions")
+	}
+	existsQuestions, err := d.questionRepo.Query(ctx).ByQuestionIDs(inp.QuestionIDs).ResultList()
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "can't query questions by ids")
+		return nil, err
+	}
+	if len(existsQuestions) != inpQuestion {
+		d.logger.DebugCtx(ctx, "not found questions")
+		return nil, errors.New("not found questions")
+	}
+	now := time.Now()
+	if inp.QuizID == "" {
+		// create new quiz
+		totalQuiz, err := d.quizRepo.Query(ctx).Count()
+		if err != nil {
+			d.logger.ErrorCtx(ctx, err, "count quiz failed")
+			return nil, err
+		}
+		newID := fmt.Sprintf("quiz_id_%02d", totalQuiz+1)
+
+		newQuiz := &model.Quiz{
+			QuizID: newID,
+			Title:  inp.Title,
+			QuizQuestions: helper.MapList(existsQuestions, func(ques *model.Question) *model.QuizQuestion {
+				return &model.QuizQuestion{
+					QuizID:     newID,
+					QuestionID: ques.QuestionID,
+					Question:   ques,
+				}
+			}),
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+		//insert quiz
+		err = d.quizRepo.Upsert(ctx, newQuiz)
+		if err != nil {
+			d.logger.ErrorCtx(ctx, err, "upsert quiz failed")
+			return nil, err
+		}
+		//insert quiz question
+		err = d.quizQuestionRepo.BulkUpsert(ctx, newQuiz.QuizQuestions)
+		if err != nil {
+			d.logger.ErrorCtx(ctx, err, "bulk upsert quiz question failed")
+			return nil, err
+		}
+		return newQuiz, nil
+	}
+	// updating
+	existsQuiz, err := d.quizRepo.Query(ctx).ByQuizID(inp.QuizID).WithQuizQuestion("").Result()
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "query quiz failed")
+		return nil, err
+	}
+	if existsQuiz == nil {
+		d.logger.DebugCtx(ctx, "not found quiz")
+		return nil, errors.New("not found quiz")
+	}
+	//TODO
 	return &model.Quiz{}, nil
 }
 

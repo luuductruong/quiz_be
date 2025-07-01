@@ -5,6 +5,7 @@ import (
 )
 
 type QuizRepo interface {
+	Upsert(ctx context.Context, quiz *Quiz) error
 	Query(ctx context.Context) QuizQuery
 }
 
@@ -29,6 +30,7 @@ type QuestionRepo interface {
 type QuestionQuery interface {
 	// query
 	ByQuestionID(questionID string) QuestionQuery
+	ByQuestionIDs(questionIDs []string) QuestionQuery
 	Limit(limit int) QuestionQuery
 	Offset(offset int) QuestionQuery
 	// result
@@ -39,6 +41,7 @@ type QuestionQuery interface {
 }
 
 type QuizQuestionRepo interface {
+	BulkUpsert(ctx context.Context, quizQuestion []*QuizQuestion) error
 	Query(ctx context.Context) QuizQuestionQuery
 }
 

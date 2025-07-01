@@ -1,7 +1,9 @@
 package quiz
 
 type ManageQuizReq struct {
-	QuizID string `json:"quiz_id"`
+	QuizID      string   `json:"quiz_id"`
+	Title       string   `json:"title"`
+	QuestionIDs []string `json:"question_ids"`
 }
 
 type ManageQuestionReq struct {
