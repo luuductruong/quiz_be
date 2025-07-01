@@ -40,6 +40,19 @@ func MapQuestionFromDomain(source *quiz.Question) *model.Question {
 	}
 }
 
+func AdminMapQuestionFromDomain(source *quiz.Question) *model.Question {
+	if source == nil {
+		return nil
+	}
+	return &model.Question{
+		QuestionId:    source.QuestionID,
+		Content:       source.Content,
+		Score:         int32(source.Score),
+		Answers:       helper.MapList(source.Answers, mapAnswerFromDomain),
+		CorrectAnswer: source.CorrectAnswer,
+	}
+}
+
 func mapAnswerFromDomain(source *quiz.Answer) *model.Answer {
 	if source == nil {
 		return nil

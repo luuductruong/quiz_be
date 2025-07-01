@@ -85,8 +85,29 @@ func (q *questionQuery) ByQuestionID(questionID string) quizDomain.QuestionQuery
 	return query.Where(q, "question_id = ?", questionID)
 }
 
+func (q *questionQuery) Limit(limit int) quizDomain.QuestionQuery {
+	return query.Limit(q, limit)
+}
+
+func (q *questionQuery) Offset(offset int) quizDomain.QuestionQuery {
+	return query.Offset(q, offset)
+}
+
+func (q *questionQuery) OrderByUpdatedAt(desc bool) quizDomain.QuestionQuery {
+	ord := ""
+	if desc {
+		ord = " desc"
+	}
+	q.SetDB(q.GetDB().Order("updated_at" + ord))
+	return q
+}
+
 func (q *questionQuery) Result() (*quizDomain.Question, error) {
 	return query.Result(q, mapQuestionToDomain)
+}
+
+func (q *questionQuery) ResultList() ([]*quizDomain.Question, error) {
+	return query.ResultList(q, mapQuestionToDomain)
 }
 
 func (q *questionQuery) Count() (int, error) {

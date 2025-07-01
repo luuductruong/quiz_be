@@ -27,6 +27,7 @@ type QuizServiceClient interface {
 	// admin
 	ManageQuiz(ctx context.Context, in *dto.ManageQuizReq, opts ...grpc.CallOption) (*model.Quiz, error)
 	ManageQuestion(ctx context.Context, in *dto.ManageQuestionReq, opts ...grpc.CallOption) (*model.Question, error)
+	GetListQuestionByAdmin(ctx context.Context, in *dto.GetListQuestionReq, opts ...grpc.CallOption) (*dto.GetListQuestionRes, error)
 	// user
 	SubmitAnswer(ctx context.Context, in *dto.SubmitAnswerReq, opts ...grpc.CallOption) (*dto.SubmitAnswerRes, error)
 	GetLeaderboard(ctx context.Context, in *dto.GetLeaderboardReq, opts ...grpc.CallOption) (*dto.GetLeaderboardRes, error)
@@ -55,6 +56,15 @@ func (c *quizServiceClient) ManageQuiz(ctx context.Context, in *dto.ManageQuizRe
 func (c *quizServiceClient) ManageQuestion(ctx context.Context, in *dto.ManageQuestionReq, opts ...grpc.CallOption) (*model.Question, error) {
 	out := new(model.Question)
 	err := c.cc.Invoke(ctx, "/service.QuizService/ManageQuestion", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *quizServiceClient) GetListQuestionByAdmin(ctx context.Context, in *dto.GetListQuestionReq, opts ...grpc.CallOption) (*dto.GetListQuestionRes, error) {
+	out := new(dto.GetListQuestionRes)
+	err := c.cc.Invoke(ctx, "/service.QuizService/GetListQuestionByAdmin", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +123,7 @@ type QuizServiceServer interface {
 	// admin
 	ManageQuiz(context.Context, *dto.ManageQuizReq) (*model.Quiz, error)
 	ManageQuestion(context.Context, *dto.ManageQuestionReq) (*model.Question, error)
+	GetListQuestionByAdmin(context.Context, *dto.GetListQuestionReq) (*dto.GetListQuestionRes, error)
 	// user
 	SubmitAnswer(context.Context, *dto.SubmitAnswerReq) (*dto.SubmitAnswerRes, error)
 	GetLeaderboard(context.Context, *dto.GetLeaderboardReq) (*dto.GetLeaderboardRes, error)
@@ -131,6 +142,9 @@ func (UnimplementedQuizServiceServer) ManageQuiz(context.Context, *dto.ManageQui
 }
 func (UnimplementedQuizServiceServer) ManageQuestion(context.Context, *dto.ManageQuestionReq) (*model.Question, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ManageQuestion not implemented")
+}
+func (UnimplementedQuizServiceServer) GetListQuestionByAdmin(context.Context, *dto.GetListQuestionReq) (*dto.GetListQuestionRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetListQuestionByAdmin not implemented")
 }
 func (UnimplementedQuizServiceServer) SubmitAnswer(context.Context, *dto.SubmitAnswerReq) (*dto.SubmitAnswerRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubmitAnswer not implemented")
@@ -192,6 +206,24 @@ func _QuizService_ManageQuestion_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QuizServiceServer).ManageQuestion(ctx, req.(*dto.ManageQuestionReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QuizService_GetListQuestionByAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dto.GetListQuestionReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QuizServiceServer).GetListQuestionByAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.QuizService/GetListQuestionByAdmin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QuizServiceServer).GetListQuestionByAdmin(ctx, req.(*dto.GetListQuestionReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -300,6 +332,10 @@ var QuizService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ManageQuestion",
 			Handler:    _QuizService_ManageQuestion_Handler,
+		},
+		{
+			MethodName: "GetListQuestionByAdmin",
+			Handler:    _QuizService_GetListQuestionByAdmin_Handler,
 		},
 		{
 			MethodName: "SubmitAnswer",

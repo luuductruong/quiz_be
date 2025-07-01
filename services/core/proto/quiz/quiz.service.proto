@@ -23,6 +23,11 @@ service QuizService {
       body: "*"
     };
   }
+  rpc GetListQuestionByAdmin(dto.GetListQuestionReq) returns (dto.GetListQuestionRes) {
+    option (google.api.http) = {
+      get: "/v1/question/list-by-admin"
+    };
+  }
 
   // user
   rpc SubmitAnswer(dto.SubmitAnswerReq) returns (dto.SubmitAnswerRes) {}

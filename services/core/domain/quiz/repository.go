@@ -29,8 +29,12 @@ type QuestionRepo interface {
 type QuestionQuery interface {
 	// query
 	ByQuestionID(questionID string) QuestionQuery
+	Limit(limit int) QuestionQuery
+	Offset(offset int) QuestionQuery
 	// result
+	OrderByUpdatedAt(desc bool) QuestionQuery
 	Result() (*Question, error)
+	ResultList() ([]*Question, error)
 	Count() (int, error)
 }
 

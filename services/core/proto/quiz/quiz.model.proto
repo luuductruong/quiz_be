@@ -17,6 +17,7 @@ message Question {
   string content = 2;
   int32 score = 3;
   repeated Answer answers = 4;
+  string correct_answer = 5;
 }
 
 message Answer {

@@ -71,3 +71,14 @@ message GetUserReq {
 message GetUserRes {
   repeated model.User list_user = 1;
 }
+
+message GetListQuestionReq {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message GetListQuestionRes {
+  repeated model.Question question_list = 1;
+  int32 page = 2;
+  int32 total = 3;
+}

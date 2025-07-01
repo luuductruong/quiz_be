@@ -751,6 +751,124 @@ func (x *GetUserRes) GetListUser() []*model.User {
 	return nil
 }
 
+type GetListQuestionReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Page  int32 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	Limit int32 `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+}
+
+func (x *GetListQuestionReq) Reset() {
+	*x = GetListQuestionReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_quiz_dto_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetListQuestionReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetListQuestionReq) ProtoMessage() {}
+
+func (x *GetListQuestionReq) ProtoReflect() protoreflect.Message {
+	mi := &file_quiz_dto_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetListQuestionReq.ProtoReflect.Descriptor instead.
+func (*GetListQuestionReq) Descriptor() ([]byte, []int) {
+	return file_quiz_dto_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *GetListQuestionReq) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *GetListQuestionReq) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type GetListQuestionRes struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	QuestionList []*model.Question `protobuf:"bytes,1,rep,name=question_list,json=questionList,proto3" json:"question_list,omitempty"`
+	Page         int32             `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+	Total        int32             `protobuf:"varint,3,opt,name=total,proto3" json:"total,omitempty"`
+}
+
+func (x *GetListQuestionRes) Reset() {
+	*x = GetListQuestionRes{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_quiz_dto_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetListQuestionRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetListQuestionRes) ProtoMessage() {}
+
+func (x *GetListQuestionRes) ProtoReflect() protoreflect.Message {
+	mi := &file_quiz_dto_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetListQuestionRes.ProtoReflect.Descriptor instead.
+func (*GetListQuestionRes) Descriptor() ([]byte, []int) {
+	return file_quiz_dto_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *GetListQuestionRes) GetQuestionList() []*model.Question {
+	if x != nil {
+		return x.QuestionList
+	}
+	return nil
+}
+
+func (x *GetListQuestionRes) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *GetListQuestionRes) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
 var File_quiz_dto_proto protoreflect.FileDescriptor
 
 var file_quiz_dto_proto_rawDesc = []byte{
@@ -825,11 +943,22 @@ var file_quiz_dto_proto_rawDesc = []byte{
 	0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x73, 0x12, 0x28, 0x0a, 0x09, 0x6c, 0x69, 0x73,
 	0x74, 0x5f, 0x75, 0x73, 0x65, 0x72, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0b, 0x2e, 0x6d,
 	0x6f, 0x64, 0x65, 0x6c, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x52, 0x08, 0x6c, 0x69, 0x73, 0x74, 0x55,
-	0x73, 0x65, 0x72, 0x42, 0x37, 0x5a, 0x35, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x71, 0x75, 0x69, 0x7a, 0x5f, 0x62, 0x65, 0x2f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63,
-	0x65, 0x73, 0x2f, 0x63, 0x6f, 0x72, 0x65, 0x2f, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x2f, 0x71, 0x75, 0x69, 0x7a, 0x2f, 0x64, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x73, 0x65, 0x72, 0x22, 0x3e, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x51, 0x75,
+	0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x67,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x70, 0x61, 0x67, 0x65, 0x12, 0x14, 0x0a,
+	0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x6c, 0x69,
+	0x6d, 0x69, 0x74, 0x22, 0x74, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x51, 0x75,
+	0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x12, 0x34, 0x0a, 0x0d, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x0f, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x2e, 0x51, 0x75, 0x65, 0x73, 0x74, 0x69, 0x6f,
+	0x6e, 0x52, 0x0c, 0x71, 0x75, 0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x69, 0x73, 0x74, 0x12,
+	0x12, 0x0a, 0x04, 0x70, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x70,
+	0x61, 0x67, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x05, 0x52, 0x05, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x42, 0x37, 0x5a, 0x35, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x71, 0x75, 0x69, 0x7a, 0x5f, 0x62, 0x65, 0x2f,
+	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x2f, 0x63, 0x6f, 0x72, 0x65, 0x2f, 0x61, 0x70,
+	0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x71, 0x75, 0x69, 0x7a, 0x2f, 0x64,
+	0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -844,7 +973,7 @@ func file_quiz_dto_proto_rawDescGZIP() []byte {
 	return file_quiz_dto_proto_rawDescData
 }
 
-var file_quiz_dto_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_quiz_dto_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_quiz_dto_proto_goTypes = []interface{}{
 	(*ManageQuizReq)(nil),          // 0: dto.ManageQuizReq
 	(*ManageQuestionReq)(nil),      // 1: dto.ManageQuestionReq
@@ -859,24 +988,28 @@ var file_quiz_dto_proto_goTypes = []interface{}{
 	(*GetQuizDetailRes)(nil),       // 10: dto.GetQuizDetailRes
 	(*GetUserReq)(nil),             // 11: dto.GetUserReq
 	(*GetUserRes)(nil),             // 12: dto.GetUserRes
-	(*model.Answer)(nil),           // 13: model.Answer
-	(*model.Quiz)(nil),             // 14: model.Quiz
-	(*model.Score)(nil),            // 15: model.Score
-	(*model.User)(nil),             // 16: model.User
+	(*GetListQuestionReq)(nil),     // 13: dto.GetListQuestionReq
+	(*GetListQuestionRes)(nil),     // 14: dto.GetListQuestionRes
+	(*model.Answer)(nil),           // 15: model.Answer
+	(*model.Quiz)(nil),             // 16: model.Quiz
+	(*model.Score)(nil),            // 17: model.Score
+	(*model.User)(nil),             // 18: model.User
+	(*model.Question)(nil),         // 19: model.Question
 }
 var file_quiz_dto_proto_depIdxs = []int32{
-	13, // 0: dto.ManageQuestionReq.answers:type_name -> model.Answer
+	15, // 0: dto.ManageQuestionReq.answers:type_name -> model.Answer
 	2,  // 1: dto.SubmitAnswerReq.select_answers:type_name -> dto.SelectedQuestionAnswer
-	14, // 2: dto.SubmitAnswerRes.quiz:type_name -> model.Quiz
-	15, // 3: dto.GetLeaderboardRes.leaderboard:type_name -> model.Score
-	14, // 4: dto.GetListQuizRes.list_quiz:type_name -> model.Quiz
-	14, // 5: dto.GetQuizDetailRes.quiz:type_name -> model.Quiz
-	16, // 6: dto.GetUserRes.list_user:type_name -> model.User
-	7,  // [7:7] is the sub-list for method output_type
-	7,  // [7:7] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	16, // 2: dto.SubmitAnswerRes.quiz:type_name -> model.Quiz
+	17, // 3: dto.GetLeaderboardRes.leaderboard:type_name -> model.Score
+	16, // 4: dto.GetListQuizRes.list_quiz:type_name -> model.Quiz
+	16, // 5: dto.GetQuizDetailRes.quiz:type_name -> model.Quiz
+	18, // 6: dto.GetUserRes.list_user:type_name -> model.User
+	19, // 7: dto.GetListQuestionRes.question_list:type_name -> model.Question
+	8,  // [8:8] is the sub-list for method output_type
+	8,  // [8:8] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_quiz_dto_proto_init() }
@@ -1041,6 +1174,30 @@ func file_quiz_dto_proto_init() {
 				return nil
 			}
 		}
+		file_quiz_dto_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetListQuestionReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_quiz_dto_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetListQuestionRes); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1048,7 +1205,7 @@ func file_quiz_dto_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_quiz_dto_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

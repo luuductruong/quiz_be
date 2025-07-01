@@ -97,6 +97,21 @@ func (h *handler) GetListQuiz(ctx context.Context, req *dto.GetListQuizReq) (*dt
 	}, nil
 }
 
+func (h *handler) GetListQuestionByAdmin(ctx context.Context, req *dto.GetListQuestionReq) (*dto.GetListQuestionRes, error) {
+	appCtx := appContext.FromContext(ctx)
+	page, limit := appCtx.GetPageAndLimit()
+	//TODO validate admin here
+	listQuestion, total, err := h.quizDomain.GetListQuestion(appCtx, page, limit)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.GetListQuestionRes{
+		QuestionList: helper.MapList(listQuestion, dto.AdminMapQuestionFromDomain),
+		Page:         int32(page),
+		Total:        total,
+	}, nil
+}
+
 func (h *handler) GetQuizDetail(ctx context.Context, req *dto.GetQuizDetailReq) (*model.Quiz, error) {
 	appCtx := appContext.FromContext(ctx)
 	q, err := h.quizDomain.GetQuizDetail(appCtx, req.QuizId)
@@ -105,6 +120,7 @@ func (h *handler) GetQuizDetail(ctx context.Context, req *dto.GetQuizDetailReq) 
 	}
 	return dto.MapQuizFromDomain(q), nil
 }
+
 func (h *handler) GetUser(ctx context.Context, req *dto.GetUserReq) (*dto.GetUserRes, error) {
 	appCtx := appContext.FromContext(ctx)
 	listUser, err := h.quizDomain.GetUser(appCtx)
