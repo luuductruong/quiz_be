@@ -6,6 +6,8 @@ type Quiz struct {
 	QuizID        string `json:"quiz_id"`
 	Title         string `json:"title"`
 	QuizQuestions []*QuizQuestion
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 type Question struct {
@@ -14,6 +16,8 @@ type Question struct {
 	Score         uint      `json:"score"`
 	Answers       []*Answer `json:"answers"`
 	CorrectAnswer string
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 type QuizQuestion struct {
@@ -31,6 +35,8 @@ type User struct {
 	UserID      string `json:"user_id"`
 	UserName    string `json:"user_name"`
 	PhoneNumber string `json:"phone_number"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type Score struct {

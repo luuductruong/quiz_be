@@ -6,6 +6,20 @@ import "quiz/quiz.model.proto";
 
 package dto;
 
+message ManageQuizReq {
+  string quiz_id = 1;
+  string title = 2;
+  repeated string question_ids = 3;
+}
+
+message ManageQuestionReq {
+  string question_id = 1;
+  string content = 2;
+  int32 score = 3;
+  repeated model.Answer answers = 4;
+  string correct_answer = 5;
+}
+
 message SelectedQuestionAnswer {
   string question_id = 1;
   string answer_title = 2;

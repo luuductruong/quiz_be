@@ -1,8 +1,14 @@
 package quiz
 
-import "github.com/quiz_be/services/core/context"
+import (
+	"github.com/quiz_be/services/core/context"
+)
 
 type Service interface {
+	// admin
+	ManageQuiz(ctx context.Context, inp *ManageQuizReq) (*Quiz, error)
+	ManageQuestion(ctx context.Context, inp *ManageQuestionReq) (*Question, error)
+	// user
 	SubmitAnswer(ctx context.Context, inp *SubmitAnswerReq) (*Quiz, error)
 	GetLeaderboard(ctx context.Context, inp *GetLeaderboardReq) ([]*Score, int32, error)
 	GetListQuiz(ctx context.Context, page int, limit int) ([]*Quiz, int32, error)

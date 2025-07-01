@@ -102,3 +102,7 @@ func (ua *userAnswerQuery) Result() (*quizDomain.UserAnswer, error) {
 func (ua *userAnswerQuery) ResultList() ([]*quizDomain.UserAnswer, error) {
 	return query.ResultList(ua, mapUserAnswerToDomain)
 }
+
+func (ua *userAnswerQuery) Delete() error {
+	return query.Delete(ua)
+}

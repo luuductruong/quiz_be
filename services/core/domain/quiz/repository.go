@@ -22,6 +22,7 @@ type QuizQuery interface {
 }
 
 type QuestionRepo interface {
+	Upsert(ctx context.Context, question *Question) error
 	Query(ctx context.Context) QuestionQuery
 }
 
@@ -30,6 +31,7 @@ type QuestionQuery interface {
 	ByQuestionID(questionID string) QuestionQuery
 	// result
 	Result() (*Question, error)
+	Count() (int, error)
 }
 
 type QuizQuestionRepo interface {
@@ -73,6 +75,7 @@ type UserAnswerQuery interface {
 	// result
 	Result() (*UserAnswer, error)
 	ResultList() ([]*UserAnswer, error)
+	Delete() error
 }
 
 type ScoreRepo interface {
@@ -95,4 +98,5 @@ type ScoreQuery interface {
 	Result() (*Score, error)
 	ResultList() ([]*Score, error)
 	Count() (int, error)
+	Delete() error
 }

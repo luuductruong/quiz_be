@@ -107,6 +107,10 @@ func Count(bq BaseQuery) (int, error) {
 	return int(count), nil
 }
 
+func Delete(bq BaseQuery) error {
+	return bq.GetDB().Delete(any(bq)).Error
+}
+
 func getOrderByStr(field string, desc bool) string {
 	if desc {
 		return fmt.Sprintf("%s desc NULLS LAST", field)

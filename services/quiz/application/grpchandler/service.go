@@ -21,6 +21,29 @@ func NewHandler(quizDomain quiz.Service) service.QuizServiceServer {
 		quizDomain: quizDomain,
 	}
 }
+func (h *handler) ManageQuiz(ctx context.Context, req *dto.ManageQuizReq) (*model.Quiz, error) {
+	appCtx := appContext.FromContext(ctx)
+	quiz, err := h.quizDomain.ManageQuiz(appCtx, &quiz.ManageQuizReq{})
+	if err != nil {
+		return nil, err
+	}
+	return dto.MapQuizFromDomain(quiz), nil
+}
+
+func (h *handler) ManageQuestion(ctx context.Context, req *dto.ManageQuestionReq) (*model.Question, error) {
+	appCtx := appContext.FromContext(ctx)
+	question, err := h.quizDomain.ManageQuestion(appCtx, &quiz.ManageQuestionReq{
+		QuestionID:    req.QuestionId,
+		Content:       req.Content,
+		Score:         uint(req.Score),
+		CorrectAnswer: req.CorrectAnswer,
+		Answers:       helper.MapList(req.Answers, dto.MapAnswerToDomain),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return dto.MapQuestionFromDomain(question), nil
+}
 
 func (h *handler) SubmitAnswer(ctx context.Context, req *dto.SubmitAnswerReq) (*dto.SubmitAnswerRes, error) {
 	appCtx := appContext.FromContext(ctx)

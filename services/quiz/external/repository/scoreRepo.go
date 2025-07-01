@@ -118,3 +118,7 @@ func (s *scoreQuery) ResultList() ([]*quizDomain.Score, error) {
 func (s *scoreQuery) Count() (int, error) {
 	return query.Count(s)
 }
+
+func (s *scoreQuery) Delete() error {
+	return query.Delete(s)
+}

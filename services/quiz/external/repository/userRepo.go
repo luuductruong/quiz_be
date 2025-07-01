@@ -4,12 +4,15 @@ import (
 	"github.com/quiz_be/services/core/context"
 	quizDomain "github.com/quiz_be/services/core/domain/quiz"
 	"github.com/quiz_be/services/core/helper/sql/query"
+	"time"
 )
 
 type userGorm struct {
 	UserID      string `gorm:"primary_key"`
 	UserName    string
 	PhoneNumber string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 func mapUserToDomain(source *userGorm) *quizDomain.User {
@@ -20,6 +23,8 @@ func mapUserToDomain(source *userGorm) *quizDomain.User {
 		UserID:      source.UserID,
 		UserName:    source.UserName,
 		PhoneNumber: source.PhoneNumber,
+		CreatedAt:   source.CreatedAt,
+		UpdatedAt:   source.UpdatedAt,
 	}
 }
 

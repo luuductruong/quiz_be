@@ -14,7 +14,7 @@ func MapQuizFromDomain(source *quiz.Quiz) *model.Quiz {
 	return &model.Quiz{
 		QuizId:    source.QuizID,
 		Title:     source.Title,
-		Questions: helper.MapList(questionsFromQuizQuestions(source.QuizQuestions), mapQuestionFromDomain),
+		Questions: helper.MapList(questionsFromQuizQuestions(source.QuizQuestions), MapQuestionFromDomain),
 	}
 }
 
@@ -28,7 +28,7 @@ func questionsFromQuizQuestions(source []*quiz.QuizQuestion) []*quiz.Question {
 	return rs
 }
 
-func mapQuestionFromDomain(source *quiz.Question) *model.Question {
+func MapQuestionFromDomain(source *quiz.Question) *model.Question {
 	if source == nil {
 		return nil
 	}
@@ -72,5 +72,15 @@ func MapUserFromDomain(source *quiz.User) *model.User {
 	return &model.User{
 		UserId:   source.UserID,
 		UserName: source.UserName,
+	}
+}
+
+func MapAnswerToDomain(source *model.Answer) *quiz.Answer {
+	if source == nil {
+		return nil
+	}
+	return &quiz.Answer{
+		Title:   source.Title,
+		Content: source.Content,
 	}
 }
