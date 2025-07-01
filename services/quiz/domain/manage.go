@@ -14,7 +14,7 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 }
 
 func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionReq) (*model.Question, error) {
-	d.logger.DebugCtx(ctx, "ManageQuestion")
+	d.logger.DebugCtx(ctx, "ManageQuestion: ", inp.QuestionID)
 	//validate input
 	if inp.Content == "" {
 		d.logger.DebugCtx(ctx, "invalid input content")
