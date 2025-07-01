@@ -6,6 +6,20 @@ import "quiz/quiz.model.proto";
 
 package dto;
 
+message ManageQuizReq {
+  string quiz_id = 1;
+  string title = 2;
+  repeated string question_ids = 3;
+}
+
+message ManageQuestionReq {
+  string question_id = 1;
+  string content = 2;
+  int32 score = 3;
+  repeated model.Answer answers = 4;
+  string correct_answer = 5;
+}
+
 message SelectedQuestionAnswer {
   string question_id = 1;
   string answer_title = 2;
@@ -56,4 +70,15 @@ message GetUserReq {
 
 message GetUserRes {
   repeated model.User list_user = 1;
+}
+
+message GetListQuestionReq {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message GetListQuestionRes {
+  repeated model.Question question_list = 1;
+  int32 page = 2;
+  int32 total = 3;
 }

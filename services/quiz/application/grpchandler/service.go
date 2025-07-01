@@ -21,6 +21,29 @@ func NewHandler(quizDomain quiz.Service) service.QuizServiceServer {
 		quizDomain: quizDomain,
 	}
 }
+func (h *handler) ManageQuiz(ctx context.Context, req *dto.ManageQuizReq) (*model.Quiz, error) {
+	appCtx := appContext.FromContext(ctx)
+	quiz, err := h.quizDomain.ManageQuiz(appCtx, &quiz.ManageQuizReq{})
+	if err != nil {
+		return nil, err
+	}
+	return dto.MapQuizFromDomain(quiz), nil
+}
+
+func (h *handler) ManageQuestion(ctx context.Context, req *dto.ManageQuestionReq) (*model.Question, error) {
+	appCtx := appContext.FromContext(ctx)
+	question, err := h.quizDomain.ManageQuestion(appCtx, &quiz.ManageQuestionReq{
+		QuestionID:    req.QuestionId,
+		Content:       req.Content,
+		Score:         uint(req.Score),
+		CorrectAnswer: req.CorrectAnswer,
+		Answers:       helper.MapList(req.Answers, dto.MapAnswerToDomain),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return dto.MapQuestionFromDomain(question), nil
+}
 
 func (h *handler) SubmitAnswer(ctx context.Context, req *dto.SubmitAnswerReq) (*dto.SubmitAnswerRes, error) {
 	appCtx := appContext.FromContext(ctx)
@@ -74,6 +97,21 @@ func (h *handler) GetListQuiz(ctx context.Context, req *dto.GetListQuizReq) (*dt
 	}, nil
 }
 
+func (h *handler) GetListQuestionByAdmin(ctx context.Context, req *dto.GetListQuestionReq) (*dto.GetListQuestionRes, error) {
+	appCtx := appContext.FromContext(ctx)
+	page, limit := appCtx.GetPageAndLimit()
+	//TODO validate admin here
+	listQuestion, total, err := h.quizDomain.GetListQuestion(appCtx, page, limit)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.GetListQuestionRes{
+		QuestionList: helper.MapList(listQuestion, dto.AdminMapQuestionFromDomain),
+		Page:         int32(page),
+		Total:        total,
+	}, nil
+}
+
 func (h *handler) GetQuizDetail(ctx context.Context, req *dto.GetQuizDetailReq) (*model.Quiz, error) {
 	appCtx := appContext.FromContext(ctx)
 	q, err := h.quizDomain.GetQuizDetail(appCtx, req.QuizId)
@@ -82,6 +120,7 @@ func (h *handler) GetQuizDetail(ctx context.Context, req *dto.GetQuizDetailReq) 
 	}
 	return dto.MapQuizFromDomain(q), nil
 }
+
 func (h *handler) GetUser(ctx context.Context, req *dto.GetUserReq) (*dto.GetUserRes, error) {
 	appCtx := appContext.FromContext(ctx)
 	listUser, err := h.quizDomain.GetUser(appCtx)

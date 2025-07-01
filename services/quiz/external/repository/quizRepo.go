@@ -6,12 +6,15 @@ import (
 	"github.com/quiz_be/services/core/helper"
 	"github.com/quiz_be/services/core/helper/sql/query"
 	"gorm.io/gorm"
+	"time"
 )
 
 type quizGorm struct {
 	QuizID        string `gorm:"primary_key"`
 	Title         string
 	QuizQuestions []*quizQuestionGorm `gorm:"foreignKey:QuizID;references:QuizID"`
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 func mapQuizToDomain(source *quizGorm) *quizDomain.Quiz {
@@ -22,6 +25,8 @@ func mapQuizToDomain(source *quizGorm) *quizDomain.Quiz {
 		QuizID:        source.QuizID,
 		Title:         source.Title,
 		QuizQuestions: helper.MapList(source.QuizQuestions, mapQuizQuestionToDomain),
+		CreatedAt:     source.CreatedAt,
+		UpdatedAt:     source.UpdatedAt,
 	}
 }
 

@@ -10,6 +10,26 @@ import "google/api/annotations.proto";
 
 
 service QuizService {
+  // admin
+  rpc ManageQuiz(dto.ManageQuizReq) returns (model.Quiz) {
+    option (google.api.http) = {
+      post: "/v1/quiz/manage"
+      body: "*"
+    };
+  }
+  rpc ManageQuestion(dto.ManageQuestionReq) returns (model.Question) {
+    option (google.api.http) = {
+      post: "/v1/question/manage"
+      body: "*"
+    };
+  }
+  rpc GetListQuestionByAdmin(dto.GetListQuestionReq) returns (dto.GetListQuestionRes) {
+    option (google.api.http) = {
+      get: "/v1/question/list-by-admin"
+    };
+  }
+
+  // user
   rpc SubmitAnswer(dto.SubmitAnswerReq) returns (dto.SubmitAnswerRes) {}
   rpc GetLeaderboard(dto.GetLeaderboardReq) returns (dto.GetLeaderboardRes) {
     option (google.api.http) = {
