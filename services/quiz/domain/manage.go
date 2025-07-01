@@ -65,7 +65,7 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 			d.logger.ErrorCtx(ctx, err, "count question failed")
 			return nil, err
 		}
-		newID := fmt.Sprintf("question_id_%03d", totalQuestion+1)
+		newID := fmt.Sprintf("q", totalQuestion+1)
 		newQuestion := &model.Question{
 			QuestionID:    newID,
 			Content:       inp.Content,
