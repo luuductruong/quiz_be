@@ -83,8 +83,59 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 		d.logger.DebugCtx(ctx, "not found quiz")
 		return nil, errors.New("not found quiz")
 	}
-	//TODO
-	return &model.Quiz{}, nil
+	// find question that removed from quiz
+	removedQuestions := make([]*model.QuizQuestion, 0)
+	for _, qQ := range existsQuiz.QuizQuestions {
+		found := false
+		for _, questionId := range inp.QuestionIDs {
+			if qQ.QuestionID == questionId {
+				found = true
+				break
+			}
+		}
+		if !found {
+			removedQuestions = append(removedQuestions, qQ)
+		}
+	}
+
+	// check removed questions for answer history
+	for _, qQ := range removedQuestions {
+		existsAnswer, err := d.userAnswerRepo.Query(ctx).ByQuizID(inp.QuizID).ByQuestionID(qQ.QuestionID).Result()
+		if err != nil {
+			d.logger.ErrorCtx(ctx, err, "query user answer failed")
+			return nil, err
+		}
+		if existsAnswer != nil {
+			d.logger.DebugCtx(ctx, "question has answer history, can't remove")
+			return nil, errors.New("question has answer history, can't remove")
+		}
+	}
+
+	// update quiz with new questions
+	existsQuiz.Title = inp.Title
+	existsQuiz.QuizQuestions = helper.MapList(existsQuestions, func(ques *model.Question) *model.QuizQuestion {
+		return &model.QuizQuestion{
+			QuizID:     existsQuiz.QuizID,
+			QuestionID: ques.QuestionID,
+			Question:   ques,
+		}
+	})
+	existsQuiz.UpdatedAt = now
+
+	// update quiz and quiz questions
+	err = d.quizRepo.Upsert(ctx, existsQuiz)
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "upsert quiz failed")
+		return nil, err
+	}
+
+	err = d.quizQuestionRepo.BulkUpsert(ctx, existsQuiz.QuizQuestions)
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "bulk upsert quiz question failed")
+		return nil, err
+	}
+
+	return existsQuiz, nil
 }
 
 func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionReq) (*model.Question, error) {
@@ -139,7 +190,7 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 			d.logger.ErrorCtx(ctx, err, "count question failed")
 			return nil, err
 		}
-		newID := fmt.Sprintf("q", totalQuestion+1)
+		newID := fmt.Sprintf("q%d", totalQuestion+1)
 		newQuestion := &model.Question{
 			QuestionID:    newID,
 			Content:       inp.Content,

@@ -4,8 +4,8 @@ import (
 	"github.com/google/uuid"
 	"math/rand"
 	"sort"
-	"strings"
 	"time"
+	"unicode"
 )
 
 func MapList[S any, D any](source []S, mapper func(S) D) []D {
@@ -33,7 +33,9 @@ func UpperFirstLetter(source string) string {
 	if len(source) == 0 {
 		return source
 	}
-	return strings.ToUpper(source[:1]) + source[1:]
+	runes := []rune(source)
+	runes[0] = unicode.ToUpper(runes[0])
+	return string(runes)
 }
 
 func NewStringUUID() string {
