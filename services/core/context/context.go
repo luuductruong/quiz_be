@@ -19,8 +19,11 @@ type Context interface {
 	// from context
 	GetDbTx() *gorm.DB
 	GetTracerId() string
+	GetLocale() string
 	Clone() Context
 	GetPageAndLimit() (int, int)
+	// to context
+	WithLocale(locale string) Context
 }
 
 func (c *ctxInternal) Clone() Context {
@@ -54,6 +57,10 @@ func (c *ctxInternal) GetPageAndLimit() (int, int) {
 	return c.GetPage(), c.GetLimit()
 }
 
+func (c *ctxInternal) GetLocale() string {
+	return middleware.LocaleFromContext(c)
+}
+
 func (c *ctxInternal) GetPage() int {
 	page := 1
 	pageCtx := middleware.PageFromCtx(c)
@@ -78,4 +85,9 @@ func (c *ctxInternal) GetLimit() int {
 		limit = 100
 	}
 	return limit
+}
+
+func (c *ctxInternal) WithLocale(locale string) Context {
+	c.Context = middleware.LocaleToContext(c.Context, locale)
+	return c
 }

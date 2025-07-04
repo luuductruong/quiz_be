@@ -12,6 +12,7 @@ import (
 func GrpcChainUnaryServer(sql db.SQL) grpc.UnaryServerInterceptor {
 	middleWareChain := []grpc.UnaryServerInterceptor{
 		middleware.GrpcDatabaseTx(sql),
+		middleware.GrpcLocaleMiddleware(),
 		middleware.RequestPaging(),
 		middleware.GrpcTracerId(),
 	}

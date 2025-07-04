@@ -107,6 +107,27 @@ func (handler *baseHandler) ResponseJson(w http.ResponseWriter, data proto.Messa
 	w.Write(body)
 }
 
+func ResponseJson(w http.ResponseWriter, data proto.Message, statusCode ...int) error {
+	var httpCode = http.StatusOK
+	if len(statusCode) > 0 {
+		httpCode = statusCode[0]
+	}
+	dataPayload, err := marshaller.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	body, err := json.Marshal(dataResponse{Success: true, Data: []byte(dataPayload)})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(httpCode)
+	w.Write(body)
+	return nil
+}
+
 func WriteError(w http.ResponseWriter, err error, statusCode ...int) {
 	errStatus, ok := status.FromError(err)
 	if !ok {

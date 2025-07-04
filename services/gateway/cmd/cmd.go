@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/quiz_be/services/core/i18n"
 	"github.com/quiz_be/services/gateway/application"
 	"github.com/quiz_be/services/gateway/application/http/ws"
+	"github.com/quiz_be/services/gateway/customize"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"net"
@@ -35,6 +37,7 @@ func Run() {
 	config.LoadConfig(&appConfig)
 	log := logger.NewLogger(appConfig.Logger)
 	logger.SetDefault(log)
+	i18n.Init(appConfig.I18n)
 
 	// client connect
 	quizConn, err = grpcHelper.NewClient(appConfig.Quiz)
@@ -64,7 +67,10 @@ func Run() {
 					DiscardUnknown: true,
 				},
 			},
-		}))
+		}),
+		runtime.WithForwardResponseOption(customize.HttpSuccessHandler),
+		runtime.WithIncomingHeaderMatcher(customize.HeaderAllows),
+	)
 
 	// register client connect
 	err = quizService.RegisterQuizServiceHandler(ctx, gMux, quizConn)

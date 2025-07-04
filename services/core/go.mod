@@ -3,11 +3,13 @@ module github.com/quiz_be/services/core
 go 1.24.3
 
 require (
+	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/go-viper/mapstructure/v2 v2.2.1
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
+	github.com/kataras/i18n v0.0.8
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/viper v1.20.1
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
@@ -21,6 +23,7 @@ require (
 )
 
 require (
+	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -58,5 +61,6 @@ require (
 	golang.org/x/text v0.23.0 // indirect
 	google.golang.org/genproto v0.0.0-20250303144028-a0af3efb3deb // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
+	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

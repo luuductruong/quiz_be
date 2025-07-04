@@ -1,10 +1,10 @@
 package domain
 
 import (
-	"errors"
 	"fmt"
 	"github.com/quiz_be/services/core/context"
 	model "github.com/quiz_be/services/core/domain/quiz"
+	"github.com/quiz_be/services/core/errors"
 	"github.com/quiz_be/services/core/helper"
 	"time"
 )
@@ -13,19 +13,19 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 	d.logger.DebugCtx(ctx, "ManageQuiz: ", inp.QuizID)
 	if inp.Title == "" {
 		d.logger.DebugCtx(ctx, "invalid input title")
-		return nil, errors.New("invalid input title")
+		return nil, errors.InvalidArgument(ctx, "invalid input title")
 	}
 	inp.Title = helper.UpperFirstLetter(inp.Title)
 	if len(inp.QuestionIDs) == 0 {
 		d.logger.DebugCtx(ctx, "invalid input questions")
-		return nil, errors.New("invalid input questions")
+		return nil, errors.InvalidArgument(ctx, "invalid input questions")
 	}
 	// find questions
 	inpQuestion := len(inp.QuestionIDs)
 	inp.QuestionIDs = helper.Unique(inp.QuestionIDs)
 	if len(inp.QuestionIDs) != inpQuestion {
 		d.logger.DebugCtx(ctx, "duplicated input questions")
-		return nil, errors.New("duplicated input questions")
+		return nil, errors.InvalidArgument(ctx, "duplicated input questions")
 	}
 	existsQuestions, err := d.questionRepo.Query(ctx).ByQuestionIDs(inp.QuestionIDs).ResultList()
 	if err != nil {
@@ -34,7 +34,7 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 	}
 	if len(existsQuestions) != inpQuestion {
 		d.logger.DebugCtx(ctx, "not found questions")
-		return nil, errors.New("not found questions")
+		return nil, errors.NotFound(ctx, model.LocKeyQuizNotFound)
 	}
 	now := time.Now()
 	if inp.QuizID == "" {
@@ -81,7 +81,7 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 	}
 	if existsQuiz == nil {
 		d.logger.DebugCtx(ctx, "not found quiz")
-		return nil, errors.New("not found quiz")
+		return nil, errors.NotFound(ctx, model.LocKeyQuizNotFound)
 	}
 	// find question that removed from quiz
 	removedQuestions := make([]*model.QuizQuestion, 0)
@@ -107,7 +107,7 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 		}
 		if existsAnswer != nil {
 			d.logger.DebugCtx(ctx, "question has answer history, can't remove")
-			return nil, errors.New("question has answer history, can't remove")
+			return nil, errors.InvalidArgument(ctx, "question has answer history, can't remove")
 		}
 	}
 
@@ -143,19 +143,19 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 	//validate input
 	if inp.Content == "" {
 		d.logger.DebugCtx(ctx, "invalid input content")
-		return nil, errors.New("invalid input content")
+		return nil, errors.InvalidArgument(ctx, "invalid input content")
 	}
 	if len(inp.Answers) == 0 {
 		d.logger.DebugCtx(ctx, "invalid input answers")
-		return nil, errors.New("invalid input answers")
+		return nil, errors.InvalidArgument(ctx, "invalid input answers")
 	}
 	if inp.CorrectAnswer == "" {
 		d.logger.DebugCtx(ctx, "invalid input correct answer")
-		return nil, errors.New("invalid input correct answer")
+		return nil, errors.InvalidArgument(ctx, "invalid input correct answer")
 	}
 	if inp.Score <= 0 {
 		d.logger.DebugCtx(ctx, "invalid input score")
-		return nil, errors.New("invalid input score")
+		return nil, errors.InvalidArgument(ctx, "invalid input score")
 	}
 	var inpCorrectAnswer *model.Answer
 	validCorrectAnswer := false
@@ -164,12 +164,12 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 		// check empty
 		if answer.Content == "" || answer.Title == "" {
 			d.logger.DebugCtx(ctx, "invalid input answers content or title")
-			return nil, errors.New("invalid input answers content or title")
+			return nil, errors.InvalidArgument(ctx, "invalid input answers content or title")
 		}
 		// check duplicate title
 		if _, ok := mapAnswer[answer.Title]; ok {
 			d.logger.DebugCtx(ctx, "duplicate answer title")
-			return nil, errors.New("duplicate answer title")
+			return nil, errors.InvalidArgument(ctx, "duplicate answer title")
 		}
 		mapAnswer[answer.Title] = struct{}{}
 		// check the correct answer title
@@ -180,7 +180,7 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 	}
 	if !validCorrectAnswer {
 		d.logger.DebugCtx(ctx, "invalid input correct answer")
-		return nil, errors.New("invalid input correct answer")
+		return nil, errors.InvalidArgument(ctx, "invalid input correct answer")
 	}
 	now := time.Now()
 	if inp.QuestionID == "" {
@@ -215,7 +215,7 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 	}
 	if existsQuestion == nil {
 		d.logger.DebugCtx(ctx, "question not found")
-		return nil, errors.New("question not found")
+		return nil, errors.InvalidArgument(ctx, "question not found")
 	}
 	// check content by title, score, correct answer
 	isContentChanged := inp.Content != existsQuestion.Content ||
@@ -241,7 +241,7 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 		}
 		if existsAnswer != nil {
 			d.logger.DebugCtx(ctx, "question has leaderboard history, can't update")
-			return nil, errors.New("question has leaderboard history, can't update")
+			return nil, errors.InvalidArgument(ctx, "question has leaderboard history, can't update")
 		}
 	}
 	// update

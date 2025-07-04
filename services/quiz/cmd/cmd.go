@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/quiz_be/services/core/i18n"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"
@@ -35,6 +36,7 @@ func Run() {
 	if err != nil {
 		logger.Default.Panic("Error connecting to database: ", err)
 	}
+	i18n.Init(appConfig.I18n)
 
 	quizDomain := domain.NewDomain(&domain.QuizDomainParam{
 		QuizRepo:         repo.NewQuizRepo(),
