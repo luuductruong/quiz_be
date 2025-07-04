@@ -2,12 +2,15 @@ package customize
 
 import (
 	"context"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	baseHttp "github.com/quiz_be/services/core/http"
-	"google.golang.org/grpc/grpclog"
-	"google.golang.org/protobuf/proto"
 	"net/http"
 	"strings"
+
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"google.golang.org/grpc/grpclog"
+	"google.golang.org/protobuf/proto"
+
+	baseHttp "github.com/quiz_be/services/core/http"
+	"github.com/quiz_be/services/core/middleware"
 )
 
 func HttpErrorHandler(ctx context.Context, mux *runtime.ServeMux, m runtime.Marshaler, w http.ResponseWriter, r *http.Request, err error) {
@@ -33,7 +36,7 @@ func HttpSuccessHandler(ctx context.Context, w http.ResponseWriter, resp proto.M
 func ExposeHeader(key string) (string, bool) {
 	key = strings.ToLower(key)
 	switch key {
-	case "tracer":
+	case strings.ToLower(middleware.TracerCtxKey):
 		return "tracer", true
 	default:
 		return key, false

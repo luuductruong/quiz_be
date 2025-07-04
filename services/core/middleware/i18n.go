@@ -2,12 +2,16 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
-const localeContextKeyName = "i18n-locale"
-const acceptLanguageContextKeyName = "accept-language"
+const (
+	DefaultLocale                = "vi-VN"
+	localeContextKeyName         = "i18n-locale"
+	acceptLanguageContextKeyName = "accept-language"
+)
 
 var i18nLocaleContextKey = localeContextKeyName
 
@@ -24,11 +28,15 @@ func GrpcLocaleMiddleware() grpc.UnaryServerInterceptor {
 			acceptLanguage = md.Get(acceptLanguageContextKeyName)
 			if len(acceptLanguage) > 0 {
 				locale = acceptLanguage[0]
+			} else {
+				locale = DefaultLocale
 			}
 		}
+		fmt.Println("GrpcLocaleMiddleware ", locale)
 
 		ctx = context.WithValue(ctx, i18nLocaleContextKey, locale)
 		ctx = metadata.AppendToOutgoingContext(ctx, localeContextKeyName, locale)
+		ctx = metadata.AppendToOutgoingContext(ctx, acceptLanguageContextKeyName, locale)
 		return handler(ctx, req)
 	}
 }

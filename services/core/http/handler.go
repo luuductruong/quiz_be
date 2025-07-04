@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"strings"
 
+	common "github.com/quiz_be/services/core/application/common/dto"
 	appContext "github.com/quiz_be/services/core/context"
 	"github.com/quiz_be/services/core/infra/logger"
 )
@@ -23,8 +24,9 @@ type dataResponse struct {
 }
 
 type errorResponse struct {
-	Success bool          `json:"success"`
-	Errors  []interface{} `json:"errors"`
+	Success   bool        `json:"success"`
+	Error     interface{} `json:"error"`
+	ErrorCode string      `json:"error_code"`
 }
 
 var (
@@ -140,8 +142,24 @@ func WriteError(w http.ResponseWriter, err error, statusCode ...int) {
 	} else {
 		httpCode = runtime.HTTPStatusFromCode(errStatus.Code())
 	}
-
-	body, err := json.Marshal(errorResponse{Success: false, Errors: errStatus.Details()})
+	var (
+		errDetail interface{} = errStatus.Message()
+		errorCode string      = ""
+	)
+	errDetails := errStatus.Details()
+	if len(errDetails) == 0 {
+		errDetails = []interface{}{errStatus.Message()}
+	}
+	if appErr, ok := errDetails[0].(*common.AppError); ok {
+		errDetail = appErr
+		errorCode = strings.ToUpper(appErr.Code)
+	}
+	body, err := json.Marshal(errorResponse{
+		Success:   false,
+		Error:     errDetail,
+		ErrorCode: errorCode,
+	})
+	//body, err := json.Marshal(errorResponse{Success: false, Error: errStatus.Details()})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

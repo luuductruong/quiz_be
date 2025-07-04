@@ -10,7 +10,7 @@ import (
 )
 
 func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*model.Quiz, error) {
-	d.logger.DebugCtx(ctx, "ManageQuiz: ", inp.QuizID)
+	d.logger.DebugCtx(ctx, "ManageQuiz: ", inp.QuizID, " localize: ", ctx.GetLocale())
 	if inp.Title == "" {
 		d.logger.DebugCtx(ctx, "invalid input title")
 		return nil, errors.InvalidArgument(ctx, "invalid input title")
@@ -107,7 +107,7 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 		}
 		if existsAnswer != nil {
 			d.logger.DebugCtx(ctx, "question has answer history, can't remove")
-			return nil, errors.InvalidArgument(ctx, "question has answer history, can't remove")
+			return nil, errors.InvalidArgument(ctx, model.LocKeyQuizQuestionHaveHistory)
 		}
 	}
 

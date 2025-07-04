@@ -4,10 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/quiz_be/services/core/i18n"
-	"github.com/quiz_be/services/gateway/application"
-	"github.com/quiz_be/services/gateway/application/http/ws"
-	"github.com/quiz_be/services/gateway/customize"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"net"
@@ -16,9 +12,13 @@ import (
 
 	coreMdw "github.com/quiz_be/services/core/application/middleware"
 	quizService "github.com/quiz_be/services/core/application/quiz/service"
+	"github.com/quiz_be/services/core/i18n"
 	"github.com/quiz_be/services/core/infra/config"
 	grpcHelper "github.com/quiz_be/services/core/infra/grpc"
 	"github.com/quiz_be/services/core/infra/logger"
+	"github.com/quiz_be/services/gateway/application"
+	"github.com/quiz_be/services/gateway/application/http/ws"
+	"github.com/quiz_be/services/gateway/customize"
 	gatewayMdw "github.com/quiz_be/services/gateway/middleware"
 )
 
@@ -69,6 +69,7 @@ func Run() {
 			},
 		}),
 		runtime.WithForwardResponseOption(customize.HttpSuccessHandler),
+		runtime.WithErrorHandler(customize.HttpErrorHandler),
 		runtime.WithIncomingHeaderMatcher(customize.HeaderAllows),
 	)
 

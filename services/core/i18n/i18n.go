@@ -1,12 +1,13 @@
 package i18n
 
 import (
-	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/kataras/i18n"
+	"google.golang.org/protobuf/types/known/structpb"
+
 	common "github.com/quiz_be/services/core/application/common/dto"
 	"github.com/quiz_be/services/core/context"
-	"google.golang.org/protobuf/types/known/structpb"
+	"github.com/quiz_be/services/core/middleware"
 )
 
 type LocKey string
@@ -25,7 +26,7 @@ func (c Config) Validate() error {
 	)
 }
 
-const DefaultLocale = "vi-VN"
+const DefaultLocale = middleware.DefaultLocale
 
 var defaultConfig = &Config{Locale: DefaultLocale}
 
@@ -35,11 +36,7 @@ func Init(cfg *Config) {
 	if cfg == nil {
 		cfg = defaultConfig
 	}
-	cfg = &Config{Locale: DefaultLocale}
-	fmt.Println("HIHI", cfg)
-	lang := cfg.Locale
-	SetDefault(lang)
-	fmt.Println("set default success")
+	SetDefault(cfg.Locale)
 	I18n = i18n.Default
 }
 
@@ -47,13 +44,15 @@ func SetDefault(langCode string) {
 	if langCode == "" {
 		langCode = DefaultLocale
 	}
-	fmt.Println("HIHIHI", I18n)
 	i18n.SetDefaultLanguage(langCode)
 }
 
 func Lt(ctx context.Context, locKey LocKey, args ...interface{}) *common.LocalizedText {
 	if I18n == nil {
-		return &common.LocalizedText{}
+		return &common.LocalizedText{
+			Text: locKey.String(),
+			Key:  locKey.String(),
+		}
 	}
 	return lt(Tr(ctx, locKey, args...), locKey, args...)
 }
