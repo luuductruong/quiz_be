@@ -16,7 +16,7 @@ func InternalDefault(ctx context.Context) error {
 
 func WithCode(ctx context.Context, code codes.Code, locKey LocKey, args ...interface{}) error {
 	message := i18n.Lt(ctx, locKey, args...)
-	details := &common.AppError{Code: locKey.String(), Message: message.Text, LocalizedMessage: message}
+	details := &common.AppError{Code: locKey.String(), LocalizedMessage: message}
 	return detailError(ctx, code, message.Text, details)
 }
 
@@ -32,6 +32,30 @@ func NotFound(ctx context.Context, locKey LocKey, args ...interface{}) error {
 		locKey = LocKeyNotFoundError
 	}
 	return WithCode(ctx, codes.NotFound, locKey, args...)
+}
+
+func FailedPreCondition(ctx context.Context, locKey LocKey, args ...interface{}) error {
+	if locKey == "" {
+		locKey = LocKeyFailedPreCondition
+	}
+	return WithCode(ctx, codes.FailedPrecondition, locKey, args...)
+}
+
+func DatabaseUnavailable(ctx context.Context, debug string) error {
+	st := status.New(codes.Unavailable, "database_unavailable")
+	appErr := &common.AppError{
+		Code: "database_unavailable",
+		LocalizedMessage: &common.LocalizedText{
+			Text: "Không thể kết nối đến cơ sở dữ liệu. Vui lòng thử lại sau.",
+			Key:  "database_unavailable",
+		},
+	}
+	stWithDetails, err := st.WithDetails(appErr)
+	if err != nil {
+		// fallback nếu thêm details lỗi
+		return st.Err()
+	}
+	return stWithDetails.Err()
 }
 
 func detailError(ctx context.Context, code codes.Code, message string, details proto.Message) error {

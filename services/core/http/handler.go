@@ -25,8 +25,8 @@ type dataResponse struct {
 
 type errorResponse struct {
 	Success   bool        `json:"success"`
-	Error     interface{} `json:"error"`
 	ErrorCode string      `json:"error_code"`
+	Error     interface{} `json:"error"`
 }
 
 var (
@@ -76,6 +76,7 @@ func (handler *baseHandler) HandleReqWithMd(w http.ResponseWriter, req *http.Req
 	res, err := handlerFn(appCtx, msg, grpc.Header(&med.HeaderMD), grpc.Trailer(&med.TrailerMD))
 	setDefaultHeaderValues(w, med)
 	if err != nil {
+		w.Header().Set("accept-language", appCtx.GetLocale())
 		handler.logger.ErrorCtx(appCtx, err)
 		handler.ResponseError(w, err)
 		return
@@ -152,12 +153,12 @@ func WriteError(w http.ResponseWriter, err error, statusCode ...int) {
 	}
 	if appErr, ok := errDetails[0].(*common.AppError); ok {
 		errDetail = appErr
-		errorCode = strings.ToUpper(appErr.Code)
+		errorCode = appErr.Code
 	}
 	body, err := json.Marshal(errorResponse{
 		Success:   false,
 		Error:     errDetail,
-		ErrorCode: errorCode,
+		ErrorCode: strings.ToUpper(errorCode),
 	})
 	//body, err := json.Marshal(errorResponse{Success: false, Error: errStatus.Details()})
 	if err != nil {

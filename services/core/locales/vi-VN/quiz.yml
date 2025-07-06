@@ -1,2 +1,21 @@
-quiz_not_found: "Không tim thấy quiz"
-quiz_question_have_history: "Có lịch sử trả lời"
+# Quiz error
+quiz_not_found: "Không tìm thấy quiz."
+quiz_question_have_history: "Câu hỏi trong quiz đã có lịch sử trả lời."
+quiz_title_empty: "Tiêu đề quiz không được để trống."
+
+# Question error
+question_content_empty: "Nội dung câu hỏi không được để trống."
+invalid_score: "Điểm số không hợp lệ."
+question_not_found: "Không tìm thấy câu hỏi."
+input_empty_list_question: "Danh sách câu hỏi đầu vào đang trống."
+input_duplicated_question: "Danh sách câu hỏi có câu hỏi bị trùng lặp."
+
+# Answer error
+empty_list_answer: "Danh sách đáp án không được để trống."
+empty_correct_answer: "Cần chọn một đáp án đúng."
+invalid_input_answer: "Đáp án không hợp lệ."
+duplicated_answer_title: "Tiêu đề đáp án bị trùng lặp."
+not_found_correct_answer: "Không tìm thấy đáp án đúng."
+
+# User error
+user_not_found: "Không tìm thấy người dùng."

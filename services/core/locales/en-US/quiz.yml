@@ -1,2 +1,21 @@
-quiz_not_found: "ENGLISH: Không tim thấy quiz"
-quiz_question_have_history: "ENGLISH: Có lịch sử trả lời"
+# Quiz error
+quiz_not_found: "Quiz not found."
+quiz_question_have_history: "This quiz has already been answered."
+quiz_title_empty: "Quiz title cannot be empty."
+
+# Question error
+question_content_empty: "Question content cannot be empty."
+invalid_score: "Invalid score."
+question_not_found: "Question not found."
+input_empty_list_question: "Question list is empty."
+input_duplicated_question: "Duplicate questions found in the list."
+
+# Answer error
+empty_list_answer: "Answer list cannot be empty."
+empty_correct_answer: "A correct answer must be selected."
+invalid_input_answer: "Invalid answer input."
+duplicated_answer_title: "Duplicate answer titles found."
+not_found_correct_answer: "Correct answer not found."
+
+# User error
+user_not_found: "User not found."

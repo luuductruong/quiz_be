@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 
 	"github.com/quiz_be/services/core/infra/db"
@@ -26,7 +28,7 @@ func GrpcDatabaseTx(db db.SQL, options ...*sql.TxOptions) grpc.UnaryServerInterc
 		tx := db.GetDB().WithContext(ctx).Begin(opts)
 		if tx.Error != nil {
 			fmt.Println("BEGIN Transaction Error:", tx.Error, info.FullMethod, &req)
-			return nil, tx.Error
+			return nil, status.Error(codes.Internal, "")
 		}
 		defer func() {
 			if tx != nil {

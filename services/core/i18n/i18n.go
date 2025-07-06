@@ -54,14 +54,18 @@ func Lt(ctx context.Context, locKey LocKey, args ...interface{}) *common.Localiz
 			Key:  locKey.String(),
 		}
 	}
-	return lt(Tr(ctx, locKey, args...), locKey, args...)
+	return lt(Tr(ctx.GetLocale(), locKey, args...), locKey, args...)
 }
 
-func Tr(ctx context.Context, locKey LocKey, args ...interface{}) string {
-	if I18n == nil {
-		return ""
+func Tr(localize string, locKey LocKey, args ...interface{}) string {
+	if localize == "" {
+		localize = DefaultLocale
 	}
-	return I18n.Tr(ctx.GetLocale(), locKey.String(), args...)
+	usingI18n := i18n.Default
+	if I18n != nil {
+		usingI18n = I18n
+	}
+	return usingI18n.Tr(localize, locKey.String(), args...)
 }
 
 func lt(text string, locKey LocKey, args ...interface{}) *common.LocalizedText {

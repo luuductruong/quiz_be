@@ -1,3 +1,4 @@
-InternalServerError: "InternalServerError hhhh"
-InvalidArgumentError: "InvalidArgumentError hhhh"
-NotFoundError: "NotFoundError hhhh"
+internal_server_error: "Đã xảy ra sự cố. Vui lòng thử lại sau ít phút."
+invalid_argument_error: "Dữ liệu đầu vào không hợp lệ."
+not_found_error: "Không tìm thấy thông tin."
+failed_precondition: "Không thể thực hiện do điều kiện chưa thỏa mãn."

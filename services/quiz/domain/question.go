@@ -3,6 +3,7 @@ package domain
 import (
 	"github.com/quiz_be/services/core/context"
 	model "github.com/quiz_be/services/core/domain/quiz"
+	"github.com/quiz_be/services/core/errors"
 	"github.com/quiz_be/services/core/helper"
 )
 
@@ -15,11 +16,11 @@ func (d *domain) GetListQuestion(ctx context.Context, page int, limit int) ([]*m
 		ResultList()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "query failed")
-		return nil, 0, err
+		return nil, 0, errors.InternalDefault(ctx)
 	}
 	count, err := d.questionRepo.Query(ctx).Count()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "count query failed")
 	}
-	return listQuestion, int32(count), err
+	return listQuestion, int32(count), nil
 }

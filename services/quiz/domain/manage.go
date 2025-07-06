@@ -1,50 +1,50 @@
 package domain
 
 import (
-	"fmt"
+	"time"
+
 	"github.com/quiz_be/services/core/context"
 	model "github.com/quiz_be/services/core/domain/quiz"
 	"github.com/quiz_be/services/core/errors"
 	"github.com/quiz_be/services/core/helper"
-	"time"
 )
 
 func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*model.Quiz, error) {
 	d.logger.DebugCtx(ctx, "ManageQuiz: ", inp.QuizID, " localize: ", ctx.GetLocale())
 	if inp.Title == "" {
 		d.logger.DebugCtx(ctx, "invalid input title")
-		return nil, errors.InvalidArgument(ctx, "invalid input title")
+		return nil, errors.InvalidArgument(ctx, model.LocKeyQuizTitleEmpty)
 	}
 	inp.Title = helper.UpperFirstLetter(inp.Title)
 	if len(inp.QuestionIDs) == 0 {
 		d.logger.DebugCtx(ctx, "invalid input questions")
-		return nil, errors.InvalidArgument(ctx, "invalid input questions")
+		return nil, errors.InvalidArgument(ctx, model.LocKeyInputEmptyListQuestion)
 	}
 	// find questions
 	inpQuestion := len(inp.QuestionIDs)
 	inp.QuestionIDs = helper.Unique(inp.QuestionIDs)
 	if len(inp.QuestionIDs) != inpQuestion {
 		d.logger.DebugCtx(ctx, "duplicated input questions")
-		return nil, errors.InvalidArgument(ctx, "duplicated input questions")
+		return nil, errors.InvalidArgument(ctx, model.LocKeyInputDuplicatedQuestion)
 	}
 	existsQuestions, err := d.questionRepo.Query(ctx).ByQuestionIDs(inp.QuestionIDs).ResultList()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "can't query questions by ids")
-		return nil, err
+		return nil, errors.InternalDefault(ctx)
 	}
 	if len(existsQuestions) != inpQuestion {
 		d.logger.DebugCtx(ctx, "not found questions")
-		return nil, errors.NotFound(ctx, model.LocKeyQuizNotFound)
+		return nil, errors.NotFound(ctx, model.LocKeyQuestionNotFound)
 	}
 	now := time.Now()
 	if inp.QuizID == "" {
-		// create new quiz
+		// create a new quiz
 		totalQuiz, err := d.quizRepo.Query(ctx).Count()
 		if err != nil {
 			d.logger.ErrorCtx(ctx, err, "count quiz failed")
-			return nil, err
+			return nil, errors.InternalDefault(ctx)
 		}
-		newID := fmt.Sprintf("quiz_id_%02d", totalQuiz+1)
+		newID := helper.GenQuizID(totalQuiz)
 
 		newQuiz := &model.Quiz{
 			QuizID: newID,
@@ -63,13 +63,13 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 		err = d.quizRepo.Upsert(ctx, newQuiz)
 		if err != nil {
 			d.logger.ErrorCtx(ctx, err, "upsert quiz failed")
-			return nil, err
+			return nil, errors.InternalDefault(ctx)
 		}
 		//insert quiz question
 		err = d.quizQuestionRepo.BulkUpsert(ctx, newQuiz.QuizQuestions)
 		if err != nil {
 			d.logger.ErrorCtx(ctx, err, "bulk upsert quiz question failed")
-			return nil, err
+			return nil, errors.InternalDefault(ctx)
 		}
 		return newQuiz, nil
 	}
@@ -77,7 +77,7 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 	existsQuiz, err := d.quizRepo.Query(ctx).ByQuizID(inp.QuizID).WithQuizQuestion("").Result()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "query quiz failed")
-		return nil, err
+		return nil, errors.InternalDefault(ctx)
 	}
 	if existsQuiz == nil {
 		d.logger.DebugCtx(ctx, "not found quiz")
@@ -103,11 +103,11 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 		existsAnswer, err := d.userAnswerRepo.Query(ctx).ByQuizID(inp.QuizID).ByQuestionID(qQ.QuestionID).Result()
 		if err != nil {
 			d.logger.ErrorCtx(ctx, err, "query user answer failed")
-			return nil, err
+			return nil, errors.InternalDefault(ctx)
 		}
 		if existsAnswer != nil {
 			d.logger.DebugCtx(ctx, "question has answer history, can't remove")
-			return nil, errors.InvalidArgument(ctx, model.LocKeyQuizQuestionHaveHistory)
+			return nil, errors.FailedPreCondition(ctx, model.LocKeyQuizQuestionHaveHistory)
 		}
 	}
 
@@ -126,13 +126,13 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 	err = d.quizRepo.Upsert(ctx, existsQuiz)
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "upsert quiz failed")
-		return nil, err
+		return nil, errors.InternalDefault(ctx)
 	}
 
 	err = d.quizQuestionRepo.BulkUpsert(ctx, existsQuiz.QuizQuestions)
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "bulk upsert quiz question failed")
-		return nil, err
+		return nil, errors.InternalDefault(ctx)
 	}
 
 	return existsQuiz, nil
@@ -143,19 +143,19 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 	//validate input
 	if inp.Content == "" {
 		d.logger.DebugCtx(ctx, "invalid input content")
-		return nil, errors.InvalidArgument(ctx, "invalid input content")
+		return nil, errors.InvalidArgument(ctx, model.LocKeyQuestionContentEmpty)
 	}
 	if len(inp.Answers) == 0 {
 		d.logger.DebugCtx(ctx, "invalid input answers")
-		return nil, errors.InvalidArgument(ctx, "invalid input answers")
+		return nil, errors.InvalidArgument(ctx, model.LocKeyEmptyListAnswer)
 	}
 	if inp.CorrectAnswer == "" {
 		d.logger.DebugCtx(ctx, "invalid input correct answer")
-		return nil, errors.InvalidArgument(ctx, "invalid input correct answer")
+		return nil, errors.InvalidArgument(ctx, model.LocKeyEmptyCorrectAnswer)
 	}
 	if inp.Score <= 0 {
 		d.logger.DebugCtx(ctx, "invalid input score")
-		return nil, errors.InvalidArgument(ctx, "invalid input score")
+		return nil, errors.InvalidArgument(ctx, model.LocKeyInvalidScore)
 	}
 	var inpCorrectAnswer *model.Answer
 	validCorrectAnswer := false
@@ -164,12 +164,12 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 		// check empty
 		if answer.Content == "" || answer.Title == "" {
 			d.logger.DebugCtx(ctx, "invalid input answers content or title")
-			return nil, errors.InvalidArgument(ctx, "invalid input answers content or title")
+			return nil, errors.InvalidArgument(ctx, model.LocKeyInvalidInputAnswer)
 		}
 		// check duplicate title
 		if _, ok := mapAnswer[answer.Title]; ok {
 			d.logger.DebugCtx(ctx, "duplicate answer title")
-			return nil, errors.InvalidArgument(ctx, "duplicate answer title")
+			return nil, errors.InvalidArgument(ctx, model.LocKeyDuplicatedAnswerTitle)
 		}
 		mapAnswer[answer.Title] = struct{}{}
 		// check the correct answer title
@@ -180,7 +180,7 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 	}
 	if !validCorrectAnswer {
 		d.logger.DebugCtx(ctx, "invalid input correct answer")
-		return nil, errors.InvalidArgument(ctx, "invalid input correct answer")
+		return nil, errors.InvalidArgument(ctx, model.LocKeyNotFoundCorrectAnswer)
 	}
 	now := time.Now()
 	if inp.QuestionID == "" {
@@ -188,9 +188,9 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 		totalQuestion, err := d.questionRepo.Query(ctx).Count()
 		if err != nil {
 			d.logger.ErrorCtx(ctx, err, "count question failed")
-			return nil, err
+			return nil, errors.InternalDefault(ctx)
 		}
-		newID := fmt.Sprintf("q%d", totalQuestion+1)
+		newID := helper.GenQuestionID(totalQuestion)
 		newQuestion := &model.Question{
 			QuestionID:    newID,
 			Content:       inp.Content,
@@ -203,7 +203,7 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 		err = d.questionRepo.Upsert(ctx, newQuestion)
 		if err != nil {
 			d.logger.ErrorCtx(ctx, err, "upsert question failed")
-			return nil, err
+			return nil, errors.InternalDefault(ctx)
 		}
 		return newQuestion, nil
 	}
@@ -211,11 +211,11 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 	existsQuestion, err := d.questionRepo.Query(ctx).ByQuestionID(inp.QuestionID).Result()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "query question failed")
-		return nil, err
+		return nil, errors.InternalDefault(ctx)
 	}
 	if existsQuestion == nil {
 		d.logger.DebugCtx(ctx, "question not found")
-		return nil, errors.InvalidArgument(ctx, "question not found")
+		return nil, errors.NotFound(ctx, model.LocKeyQuestionNotFound)
 	}
 	// check content by title, score, correct answer
 	isContentChanged := inp.Content != existsQuestion.Content ||
@@ -237,11 +237,11 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 		existsAnswer, err := d.userAnswerRepo.Query(ctx).ByQuestionID(inp.QuestionID).Result()
 		if err != nil {
 			d.logger.ErrorCtx(ctx, err, "query user answer failed")
-			return nil, err
+			return nil, errors.InternalDefault(ctx)
 		}
 		if existsAnswer != nil {
 			d.logger.DebugCtx(ctx, "question has leaderboard history, can't update")
-			return nil, errors.InvalidArgument(ctx, "question has leaderboard history, can't update")
+			return nil, errors.FailedPreCondition(ctx, model.LocKeyQuizQuestionHaveHistory)
 		}
 	}
 	// update
@@ -267,12 +267,12 @@ func (d *domain) clearLeaderboard(ctx context.Context, quizId string) error {
 	err := d.userAnswerRepo.Query(ctx).ByQuizID(quizId).Delete()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "delete user answer failed")
-		return err
+		return errors.InternalDefault(ctx)
 	}
 	err = d.scoreRepo.Query(ctx).ByQuizID(quizId).Delete()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "delete score failed")
-		return err
+		return errors.InternalDefault(ctx)
 	}
 	return nil
 }
