@@ -57,7 +57,7 @@ func Run() {
 	gMux := runtime.NewServeMux(
 		// https://grpc-ecosystem.github.io/grpc-gateway/docs/development/grpc-gateway_v2_migration_guide/
 		// use UseProtoNames = true for JSON snake_case (default is camelCase)
-		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.HTTPBodyMarshaler{
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, &customize.EmptyMarshaler{
 			Marshaler: &runtime.JSONPb{
 				MarshalOptions: protojson.MarshalOptions{
 					UseProtoNames:   true,

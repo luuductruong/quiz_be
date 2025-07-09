@@ -34,6 +34,10 @@ var (
 		EmitUnpopulated: true,
 		UseProtoNames:   true,
 	}
+
+	unMarshaller = &protojson.UnmarshalOptions{
+		DiscardUnknown: true,
+	}
 )
 
 type HandlerFn = func(ctx appContext.Context, req proto.Message, opts ...grpc.CallOption) (proto.Message, error)
@@ -168,6 +172,7 @@ func WriteError(w http.ResponseWriter, err error, statusCode ...int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(httpCode)
 	w.Write(body)
+	return
 }
 
 func setDefaultHeaderValues(w http.ResponseWriter, md runtime.ServerMetadata) {
