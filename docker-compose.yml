@@ -21,6 +21,11 @@ services:
       POSTGRES_PASSWORD: quiz_be
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    ports:
+      - "5674:5672"
+      - "15674:15672"
 
 volumes:
   postgres_data: # lưu dữ liệu khi chạy docker compose down

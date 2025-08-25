@@ -16,3 +16,16 @@ database:
   password: quiz_be
   dbname: quiz
   ssl: false
+
+pubsub:
+  kind: rabbitMQ
+  topic: quiz
+  subscription:
+  subscribes:
+  rabbitmq:
+    host: localhost
+    port: 5674
+    username: guest
+    password: guest
+    topic: quiz
+    exchange_name: quiz

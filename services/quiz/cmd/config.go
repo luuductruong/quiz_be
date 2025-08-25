@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	Grpc     *config.Client `config:"grpc"`
-	Logger   *logger.Config `config:"logger"`
-	I18n     *i18n.Config   `config:"i18n"`
-	DataBase *db.Config     `config:"database"`
+	Grpc     *config.Client       `config:"grpc"`
+	Logger   *logger.Config       `config:"logger"`
+	I18n     *i18n.Config         `config:"i18n"`
+	DataBase *db.Config           `config:"database"`
+	PubSub   *config.PubSubConfig `config:"pubsub"`
 }

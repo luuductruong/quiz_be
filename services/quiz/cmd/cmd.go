@@ -2,17 +2,20 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/quiz_be/services/core/i18n"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"
 
 	"github.com/quiz_be/services/core/application/middleware"
 	appService "github.com/quiz_be/services/core/application/quiz/service"
+	"github.com/quiz_be/services/core/i18n"
 	"github.com/quiz_be/services/core/infra/config"
 	"github.com/quiz_be/services/core/infra/db"
+	"github.com/quiz_be/services/core/infra/factory"
 	"github.com/quiz_be/services/core/infra/logger"
+	"github.com/quiz_be/services/core/infra/pubsub"
 	handler "github.com/quiz_be/services/quiz/application/grpchandler"
+	"github.com/quiz_be/services/quiz/application/subscriber"
 	"github.com/quiz_be/services/quiz/domain"
 	repo "github.com/quiz_be/services/quiz/external/repository"
 )
@@ -47,6 +50,16 @@ func Run() {
 		ScoreRepo:        repo.NewScoreRepo(),
 	})
 	grpcHandler = handler.NewHandler(quizDomain)
+
+	psClient, err := factory.NewPubSub(log, appConfig.PubSub)
+	if err != nil {
+		logger.Default.Panic("can't connect to pubsub: ", err)
+	}
+	appSubscriber := pubsub.NewAppSubscriber(psClient.Subscriber(), appConfig.PubSub.Subscription, nil)
+	subsHandler := subscriber.NewHandler(quizDomain)
+	appSubscriber.RegisterEventSubscriber(subsHandler.RouteSetup())
+	appSubscriber.StartReceiving()
+	defer appSubscriber.StopReceiving()
 
 	grpcServe()
 }
