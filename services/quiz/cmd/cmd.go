@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/quiz_be/services/core/domain/quiz"
+	"github.com/quiz_be/services/core/infra/factory"
+	"github.com/quiz_be/services/quiz/application/subscriber"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"
@@ -11,19 +14,21 @@ import (
 	"github.com/quiz_be/services/core/i18n"
 	"github.com/quiz_be/services/core/infra/config"
 	"github.com/quiz_be/services/core/infra/db"
-	"github.com/quiz_be/services/core/infra/factory"
 	"github.com/quiz_be/services/core/infra/logger"
 	"github.com/quiz_be/services/core/infra/pubsub"
 	handler "github.com/quiz_be/services/quiz/application/grpchandler"
-	"github.com/quiz_be/services/quiz/application/subscriber"
 	"github.com/quiz_be/services/quiz/domain"
 	repo "github.com/quiz_be/services/quiz/external/repository"
 )
 
 var (
-	sql         db.SQL
-	appConfig   *Config
-	grpcHandler appService.QuizServiceServer
+	quizDomain    quiz.Service
+	sql           db.SQL
+	appConfig     *Config
+	grpcHandler   appService.QuizServiceServer
+	appSubscriber pubsub.AppSubscriber
+	psClient      pubsub.PubSub
+	messageBus    pubsub.MessageBus
 )
 
 func Run() {
@@ -40,27 +45,30 @@ func Run() {
 		logger.Default.Panic("Error connecting to database: ", err)
 	}
 	i18n.Init(appConfig.I18n)
+	messageBus = pubsub.NewBatchStagedMessageBus(appConfig.PubSub.Topic)
+	psClient, err = factory.NewPubSub(log, appConfig.PubSub)
+	if err != nil {
+		logger.Default.Panic("can't connect to pubsub: ", err)
+	}
 
-	quizDomain := domain.NewDomain(&domain.QuizDomainParam{
+	quizDomain = domain.NewDomain(&domain.QuizDomainParam{
 		QuizRepo:         repo.NewQuizRepo(),
 		QuestionRepo:     repo.NewQuestionRepo(),
 		QuizQuestionRepo: repo.NewQuizQuestionRepo(),
 		UserRepo:         repo.NewUserRepo(),
 		UserAnswerRepo:   repo.NewUserAnswerRepo(),
 		ScoreRepo:        repo.NewScoreRepo(),
+		Publisher:        psClient.Publisher(),
 	})
 	grpcHandler = handler.NewHandler(quizDomain)
-
-	psClient, err := factory.NewPubSub(log, appConfig.PubSub)
-	if err != nil {
-		logger.Default.Panic("can't connect to pubsub: ", err)
-	}
-	appSubscriber := pubsub.NewAppSubscriber(psClient.Subscriber(), appConfig.PubSub.Subscription, nil)
+	appSubscriber = pubsub.NewAppSubscriber(psClient.Subscriber(), appConfig.PubSub.Subscription, nil)
 	subsHandler := subscriber.NewHandler(quizDomain)
 	appSubscriber.RegisterEventSubscriber(subsHandler.RouteSetup())
-	appSubscriber.StartReceiving()
+	err = appSubscriber.StartReceiving()
+	if err != nil {
+		logger.Default.Panic("can't start receiving message: ", err)
+	}
 	defer appSubscriber.StopReceiving()
-
 	grpcServe()
 }
 

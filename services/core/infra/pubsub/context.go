@@ -34,3 +34,16 @@ func batchHandler(route SubscriptionRouter) SubscriptionHandler {
 		return nil
 	}
 }
+
+// MessageFromContext get the message batch from context. REQUIRES Middleware to have run.
+func MessageFromContext(ctx context.Context) *ContextMessages {
+	raw, _ := ctx.Value(mqContextKey).(*ContextMessages)
+	return raw
+}
+
+func addMessagesToContext(ctx context.Context, messages ...*Message) {
+	payload, _ := ctx.Value(mqContextKey).(*ContextMessages)
+	if payload != nil {
+		payload.Messages = append(payload.Messages, messages...)
+	}
+}

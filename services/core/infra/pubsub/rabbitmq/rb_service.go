@@ -51,6 +51,7 @@ NewService creates a new RabbitMQ service instance with the provided configurati
 */
 func NewService(config *RbConfig) *Service {
 	url := fmt.Sprintf("amqp://%s:%s@%s:%s/", config.Username, config.Password, config.Host, config.Port)
+	fmt.Println("exchange name: ", config.ExchangeName, " topic: ", config.Topic, " subscribes: ", config.Subscribes, " url: ", url, "")
 	return &Service{
 		URL:            url,
 		ExchangeName:   config.ExchangeName,

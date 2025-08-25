@@ -2,7 +2,7 @@ package subscriber
 
 import (
 	"context"
-	appContext "github.com/quiz_be/services/core/context"
+	"fmt"
 	"github.com/quiz_be/services/core/domain/quiz"
 	"github.com/quiz_be/services/core/infra/pubsub"
 )
@@ -22,21 +22,17 @@ type handler struct {
 }
 
 func (h *handler) RouteSetup() map[pubsub.MessageName]pubsub.SubscriptionHandler {
-	return map[pubsub.MessageName]pubsub.SubscriptionHandler{}
+	return map[pubsub.MessageName]pubsub.SubscriptionHandler{
+		"test": h.Test,
+	}
 }
 
 func (h *handler) Test(ctx context.Context, msg *pubsub.Message) error {
-	appCtx := appContext.FromContext(ctx)
-	type Test struct {
-		ProductID int64
-	}
-	var test Test
-	err := msg.ScanPayload(&test)
+	q := quiz.Quiz{}
+	err := msg.ScanPayload(&q)
 	if err != nil {
 		return err
 	}
-	if _, err = h.domain.GetQuizDetail(appCtx, "10"); err != nil {
-		return err
-	}
+	fmt.Println("TESTTTTTTTTT: ", q.QuizID)
 	return nil
 }

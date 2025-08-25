@@ -22,6 +22,7 @@ pubsub:
   topic: quiz
   subscription:
   subscribes:
+    - quiz
   rabbitmq:
     host: localhost
     port: 5674
