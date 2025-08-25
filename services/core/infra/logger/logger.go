@@ -45,6 +45,7 @@ type Logger interface {
 	Fatal(...interface{})
 	Panic(...interface{})
 	Error(...interface{})
+	Debug(...interface{})
 
 	// with appcontext
 	ErrorCtx(context.Context, error, ...interface{})
@@ -67,6 +68,10 @@ func (l *logger) Panic(i ...interface{}) {
 
 func (l *logger) Error(i ...interface{}) {
 	l.withDefaultFields().Error(i...)
+}
+
+func (l *logger) Debug(i ...interface{}) {
+	l.withDefaultFields().Debug(i...)
 }
 
 func (l *logger) DebugCtx(ctx context.Context, i ...interface{}) {
