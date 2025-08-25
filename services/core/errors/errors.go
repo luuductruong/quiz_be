@@ -66,3 +66,12 @@ func detailError(ctx context.Context, code codes.Code, message string, details p
 
 	return detailStatus.Err()
 }
+
+func Code(err error) codes.Code {
+	codeStatus, _ := status.FromError(err)
+	return codeStatus.Code()
+}
+
+func InvalidArgumentCode() codes.Code {
+	return codes.InvalidArgument
+}
