@@ -62,7 +62,11 @@ func Run() {
 	})
 	grpcHandler = handler.NewHandler(quizDomain)
 	appSubscriber = pubsub.NewAppSubscriber(psClient.Subscriber(), appConfig.PubSub.Subscription, nil)
-	subsHandler := subscriber.NewHandler(quizDomain)
+	subsHandler := subscriber.NewHandler(&subscriber.SubsHandlerParam{
+		Service: quizDomain,
+		DB:      sql.GetDB(),
+		Logger:  log,
+	})
 	appSubscriber.RegisterEventSubscriber(subsHandler.RouteSetup())
 	err = appSubscriber.StartReceiving()
 	if err != nil {

@@ -4,6 +4,10 @@ import (
 	"github.com/quiz_be/services/core/context"
 )
 
+const (
+	PushJobGetQuizDetail = "getQuizDetail"
+)
+
 type Service interface {
 	// admin
 	ManageQuiz(ctx context.Context, inp *ManageQuizReq) (*Quiz, error)

@@ -44,9 +44,9 @@ func (h *httpHandler) GetQuizDetail(w http.ResponseWriter, r *http.Request, para
 		reqMapping.QuizId = params["quiz_id"]
 		res, errResp := h.service.GetQuizDetail(ctx, reqMapping, opts...)
 		log.Println("GetQuizDetail return: ", res, "\t err: ", errResp)
-		if errResp == nil && res != nil {
-			go h.getLeaderboardAndUpdateWS(ctx.Clone(), res.QuizId, 1, 10)
-		}
+		//if errResp == nil && res != nil {
+		//	go h.getLeaderboardAndUpdateWS(ctx.Clone(), res.QuizId, 1, 10)
+		//}
 		return res, errResp
 	}
 	h.HandleReqWithMd(w, r, &dto.GetQuizDetailReq{}, fn)
@@ -66,9 +66,9 @@ func (h *httpHandler) SubmitAnswer(w http.ResponseWriter, r *http.Request, param
 		}
 		res, errResp := h.service.SubmitAnswer(ctx, reqMapping, opts...)
 		log.Println("Res: ", res, "\t err: ", errResp)
-		if errResp == nil && res != nil {
-			go h.getLeaderboardAndUpdateWS(ctx.Clone(), res.Quiz.QuizId, 1, 10)
-		}
+		//if errResp == nil && res != nil {
+		//	go h.getLeaderboardAndUpdateWS(ctx.Clone(), res.Quiz.QuizId, 1, 10)
+		//}
 		return res, errResp
 	}
 	h.HandleReqWithMd(w, r, &dto.SubmitAnswerReq{}, fn)

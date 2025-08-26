@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"encoding/json"
+	"github.com/quiz_be/services/core/infra/pubsub"
 	"time"
 
 	"github.com/quiz_be/services/core/context"
@@ -135,6 +137,18 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 		return nil, errors.InternalDefault(ctx)
 	}
 
+	// Test push queue
+	payload, _ := json.Marshal(existsQuiz)
+	d.logger.DebugCtx(ctx, "PushJobGetQuizDetail: ", string(payload))
+	err = d.publisher.Publish(d.publisher.Topic("quiz"), &pubsub.Message{
+		ID:      existsQuiz.QuizID,
+		Kind:    "",
+		Name:    model.PushJobGetQuizDetail,
+		Payload: payload,
+	})
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "publish failed")
+	}
 	return existsQuiz, nil
 }
 

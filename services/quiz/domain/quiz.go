@@ -1,14 +1,12 @@
 package domain
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/quiz_be/services/core/context"
 	model "github.com/quiz_be/services/core/domain/quiz"
 	"github.com/quiz_be/services/core/errors"
 	"github.com/quiz_be/services/core/helper"
-	"github.com/quiz_be/services/core/infra/pubsub"
 )
 
 // SubmitAnswer processes a user's answer submission for a quiz question and validates inputs, user, quiz, question, and answer.
@@ -209,19 +207,6 @@ func (d *domain) GetQuizDetail(ctx context.Context, quizID string) (*model.Quiz,
 	if quiz == nil {
 		d.logger.DebugCtx(ctx, "quiz not found")
 		return nil, errors.NotFound(ctx, model.LocKeyQuizNotFound)
-	}
-
-	// Test push queue
-	payload, _ := json.Marshal(quiz)
-	err = d.publisher.Publish(d.publisher.Topic("quiz"), &pubsub.Message{
-		ID:      "10",
-		Kind:    "",
-		Name:    "test",
-		Payload: payload,
-	})
-	if err != nil {
-		d.logger.ErrorCtx(ctx, err, "publish failed")
-		return nil, errors.InternalDefault(ctx)
 	}
 	return quiz, nil
 }

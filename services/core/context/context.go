@@ -2,6 +2,7 @@ package context
 
 import (
 	"context"
+	"database/sql"
 	"github.com/quiz_be/services/core/middleware"
 	"gorm.io/gorm"
 )
@@ -22,7 +23,9 @@ type Context interface {
 	GetLocale() string
 	Clone() Context
 	GetPageAndLimit() (int, int)
+	RunTx(fn func(ctx Context) error, options ...*sql.TxOptions) error
 	// to context
+	WithDbTx(db *gorm.DB) Context
 	WithLocale(locale string) Context
 }
 
@@ -90,4 +93,35 @@ func (c *ctxInternal) GetLimit() int {
 func (c *ctxInternal) WithLocale(locale string) Context {
 	c.Context = middleware.LocaleToContext(c.Context, locale)
 	return c
+}
+
+func (c *ctxInternal) WithDbTx(db *gorm.DB) Context {
+	c.Context = middleware.DbTxToContext(c.Context, db)
+	return c
+}
+
+func (c *ctxInternal) RunTx(fn func(ctx Context) error, options ...*sql.TxOptions) error {
+	var err error
+	var opt *sql.TxOptions
+	if len(options) > 1 {
+		opt = options[0]
+	}
+
+	panicked := true
+	tx := c.GetDbTx().Begin(opt)
+	defer func() {
+		// Make sure to rollback when panic, Block error or Commit error
+		if panicked || err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	err = fn(c.WithDbTx(tx))
+
+	if err == nil {
+		err = tx.Commit().Error
+	}
+
+	panicked = false
+	return err
 }
