@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "github.com/quiz_be/services/core/application/job/dto";
+
+import "job/job.model.proto";
+
+package dto;
+
+message TestReq{
+  string name = 1;
+}
+
+message TestResp {
+  model.Test test = 1;
+}

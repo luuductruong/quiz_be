@@ -1,0 +1,35 @@
+grpc:
+  host: localhost
+  port: 8002
+quiz:
+  host: localhost
+  port: 8001
+
+logger:
+  output: stdout
+  file:
+  level: debug
+  format: text
+  expecting_line: true
+
+database:
+  host: localhost
+  port: 5432
+  user: quiz_be
+  password: quiz_be
+  dbname: quiz
+  ssl: false
+
+pubsub:
+  kind: rabbitMQ
+  topic: quiz
+  subscription:
+  subscribes:
+    - quiz
+  rabbitmq:
+    host: localhost
+    port: 5674
+    username: guest
+    password: guest
+    topic: quiz
+    exchange_name: quiz

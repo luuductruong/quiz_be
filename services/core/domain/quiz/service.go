@@ -5,6 +5,7 @@ import (
 )
 
 const (
+	QuizTopic            = "quiz"
 	PushJobGetQuizDetail = "getQuizDetail"
 )
 

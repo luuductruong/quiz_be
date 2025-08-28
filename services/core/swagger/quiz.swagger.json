@@ -7,6 +7,9 @@
   "tags": [
     {
       "name": "QuizService"
+    },
+    {
+      "name": "JobService"
     }
   ],
   "consumes": [
@@ -16,6 +19,30 @@
     "application/json"
   ],
   "paths": {
+    "/v1/job/test/{name}": {
+      "get": {
+        "operationId": "JobService_Test",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dtoTestResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "JobService"
+        ]
+      }
+    },
     "/v1/question/list-by-admin": {
       "get": {
         "operationId": "QuizService_GetListQuestionByAdmin",
@@ -317,6 +344,14 @@
         }
       }
     },
+    "dtoTestResp": {
+      "type": "object",
+      "properties": {
+        "test": {
+          "$ref": "#/definitions/modelTest"
+        }
+      }
+    },
     "modelAnswer": {
       "type": "object",
       "properties": {
@@ -385,6 +420,14 @@
         "update_at": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "modelTest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
         }
       }
     },

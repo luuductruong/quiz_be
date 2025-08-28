@@ -140,7 +140,7 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 	// Test push queue
 	payload, _ := json.Marshal(existsQuiz)
 	d.logger.DebugCtx(ctx, "PushJobGetQuizDetail: ", string(payload))
-	err = d.publisher.Publish(d.publisher.Topic("quiz"), &pubsub.Message{
+	err = d.publisher.Publish(d.publisher.Topic(model.QuizTopic), &pubsub.Message{
 		ID:      existsQuiz.QuizID,
 		Kind:    "",
 		Name:    model.PushJobGetQuizDetail,

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option go_package = "github.com/quiz_be/services/core/application/job/service";
+
+package service;
+
+import "job/job.dto.proto";
+import "job/job.model.proto";
+import "google/api/annotations.proto";
+
+service JobService {
+  rpc Test(dto.TestReq) returns (dto.TestResp) {
+    option (google.api.http) = {
+      get: "/v1/job/test/{name}"
+    };
+  }
+}
