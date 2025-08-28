@@ -21,7 +21,7 @@ func NewHandler(jobDomain job.Service) service.JobServiceServer {
 
 func (h *handler) PushJob(ctx context.Context, req *dto.PushJobReq) (*dto.PushJobResp, error) {
 	appCtx := appContext.FromContext(ctx)
-	err := h.jobDomain.PushJob(appCtx, req.Topic, req.Data)
+	err := h.jobDomain.PushJob(appCtx, req.Name, req.Topics, req.Data)
 	if err != nil {
 		return nil, err
 	}

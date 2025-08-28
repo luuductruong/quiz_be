@@ -1,9 +1,9 @@
 package domain
 
 import (
-	"github.com/google/uuid"
 	"github.com/quiz_be/services/core/context"
 	"github.com/quiz_be/services/core/domain/job"
+	"github.com/quiz_be/services/core/helper"
 	"github.com/quiz_be/services/core/infra/logger"
 	"github.com/quiz_be/services/core/infra/pubsub"
 	"time"
@@ -20,20 +20,31 @@ type domain struct {
 	jobRepo   job.JobRepo
 }
 
-func (d *domain) PushJob(ctx context.Context, topic string, data []byte) error {
+func (d *domain) PushJob(ctx context.Context, name string, topics []string, data []byte) error {
 	d.logger.DebugCtx(ctx, "PushJob")
-	d.logger.DebugCtx(ctx, "topic: ", topic)
+	d.logger.DebugCtx(ctx, "topics: ", topics)
 	d.logger.DebugCtx(ctx, "data: ", string(data))
-	err := d.jobRepo.Upsert(ctx, &job.Job{
-		ID:        uuid.NewString(),
-		Name:      topic,
-		Data:      data,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	})
-	if err != nil {
-		d.logger.ErrorCtx(ctx, err, "upsert job failed")
-		return err
+	var err error
+	defer func() {
+		err = nil
+	}()
+	tracerId := ctx.GetTracerId()
+	for _, topic := range topics {
+		err = d.jobRepo.Upsert(ctx, &job.Job{
+			ID:         helper.NewStringUUIDV7(),
+			Name:       name,
+			Data:       data,
+			RetryCount: 0,
+			LastError:  "",
+			TraceID:    tracerId,
+			Exchange:   topic,
+			CreatedAt:  time.Now(),
+			UpdatedAt:  time.Now(),
+		})
+		if err != nil {
+			d.logger.ErrorCtx(ctx, err, "upsert job failed for name: ", name, " topic: ", topic, " data: ", string(data))
+			// ignore return error
+		}
 	}
 	return nil
 }

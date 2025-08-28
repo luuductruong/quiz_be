@@ -6,5 +6,5 @@ import (
 
 type Service interface {
 	Test(ctx context.Context, name string) (*Test, error)
-	PushJob(ctx context.Context, topic string, data []byte) error
+	PushJob(ctx context.Context, name string, topics []string, data []byte) error
 }

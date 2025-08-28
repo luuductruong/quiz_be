@@ -10,7 +10,7 @@ import (
 )
 
 type Service interface {
-	PushJob(ctx context.Context, topic string, data []byte) error
+	PushJob(ctx context.Context, name string, topics []string, data []byte) error
 }
 
 func NewService(conn *grpc.ClientConn) Service {
@@ -25,11 +25,12 @@ type service struct {
 	logger  logger.Logger
 }
 
-func (s *service) PushJob(ctx context.Context, topic string, data []byte) error {
+func (s *service) PushJob(ctx context.Context, name string, topics []string, data []byte) error {
 	s.logger.DebugCtx(ctx, "PushJob")
 	_, err := s.service.PushJob(ctx, &dto.PushJobReq{
-		Topic: topic,
-		Data:  data,
+		Name:   name,
+		Topics: topics,
+		Data:   data,
 	})
 	if err != nil {
 		s.logger.ErrorCtx(ctx, err, "PushJob failed")

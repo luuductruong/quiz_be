@@ -4,17 +4,24 @@ import (
 	"github.com/quiz_be/services/core/context"
 	jobDomain "github.com/quiz_be/services/core/domain/job"
 	"github.com/quiz_be/services/core/helper/sql/query"
+	"gorm.io/datatypes"
 	"time"
 )
 
 type jobGorm struct {
-	ID            string `gorm:"primary_key"`
+	ID            string `gorm:"primaryKey"`
 	Name          string
-	Data          []byte
+	Data          datatypes.JSON
+	Status        string `gorm:"default:PENDING;not null"`
+	RetryCount    int    `gorm:"default:0;not null"`
 	LastRunStatus string
+	LastError     string
 	LastRunAt     *time.Time
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	TraceID       string
+	Exchange      string
+	RoutingKey    string
+	CreatedAt     time.Time `gorm:"autoCreateTime"`
+	UpdatedAt     time.Time `gorm:"autoUpdateTime"`
 }
 
 func (j jobGorm) TableName() string {
@@ -29,8 +36,14 @@ func mapJobFromDomain(job *jobDomain.Job) *jobGorm {
 		ID:            job.ID,
 		Name:          job.Name,
 		Data:          job.Data,
+		Status:        job.Status,
+		RetryCount:    job.RetryCount,
 		LastRunStatus: job.LastRunStatus,
+		LastError:     job.LastError,
 		LastRunAt:     job.LastRunAt,
+		TraceID:       job.TraceID,
+		Exchange:      job.Exchange,
+		RoutingKey:    job.RoutingKey,
 		CreatedAt:     job.CreatedAt,
 		UpdatedAt:     job.UpdatedAt,
 	}
@@ -44,8 +57,14 @@ func mapJobToDomain(jobG *jobGorm) *jobDomain.Job {
 		ID:            jobG.ID,
 		Name:          jobG.Name,
 		Data:          jobG.Data,
+		Status:        jobG.Status,
+		RetryCount:    jobG.RetryCount,
 		LastRunStatus: jobG.LastRunStatus,
+		LastError:     jobG.LastError,
 		LastRunAt:     jobG.LastRunAt,
+		TraceID:       jobG.TraceID,
+		Exchange:      jobG.Exchange,
+		RoutingKey:    jobG.RoutingKey,
 		CreatedAt:     jobG.CreatedAt,
 		UpdatedAt:     jobG.UpdatedAt,
 	}

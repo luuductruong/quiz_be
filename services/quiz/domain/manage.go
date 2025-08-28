@@ -2,6 +2,7 @@ package domain
 
 import (
 	"encoding/json"
+	"github.com/quiz_be/services/core/infra/job"
 	"time"
 
 	"github.com/quiz_be/services/core/context"
@@ -37,9 +38,29 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 		d.logger.DebugCtx(ctx, "not found questions")
 		return nil, errors.NotFound(ctx, model.LocKeyQuestionNotFound)
 	}
+	topics := []string{}
+	eventName := ""
+	var handledQuiz *model.Quiz
+	defer func() {
+		if handledQuiz == nil || err != nil {
+			return
+		}
+		if len(topics) > 0 {
+			// push job
+			payload, _ := json.Marshal(handledQuiz)
+			d.logger.DebugCtx(ctx, "PushJobGetQuizDetail: ", string(payload))
+			err = d.jobClient.PushJob(ctx, eventName, topics, payload)
+			if err != nil {
+				d.logger.ErrorCtx(ctx, err, "push job failed")
+			}
+		}
+	}()
+
 	now := time.Now()
 	if inp.QuizID == "" {
 		// create a new quiz
+		topics = append(topics, job.TOPIC_SEARCH, job.TOPIC_LEADERBOARD)
+		eventName = job.EVENT_QUIZ_CREATED
 		totalQuiz, err := d.quizRepo.Query(ctx).Count()
 		if err != nil {
 			d.logger.ErrorCtx(ctx, err, "count quiz failed")
@@ -47,7 +68,7 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 		}
 		newID := helper.GenQuizID(totalQuiz)
 
-		newQuiz := &model.Quiz{
+		handledQuiz = &model.Quiz{
 			QuizID: newID,
 			Title:  inp.Title,
 			QuizQuestions: helper.MapList(existsQuestions, func(ques *model.Question) *model.QuizQuestion {
@@ -61,32 +82,34 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 			UpdatedAt: now,
 		}
 		//insert quiz
-		err = d.quizRepo.Upsert(ctx, newQuiz)
+		err = d.quizRepo.Upsert(ctx, handledQuiz)
 		if err != nil {
 			d.logger.ErrorCtx(ctx, err, "upsert quiz failed")
 			return nil, errors.InternalDefault(ctx)
 		}
 		//insert quiz question
-		err = d.quizQuestionRepo.BulkUpsert(ctx, newQuiz.QuizQuestions)
+		err = d.quizQuestionRepo.BulkUpsert(ctx, handledQuiz.QuizQuestions)
 		if err != nil {
 			d.logger.ErrorCtx(ctx, err, "bulk upsert quiz question failed")
 			return nil, errors.InternalDefault(ctx)
 		}
-		return newQuiz, nil
+		return handledQuiz, nil
 	}
 	// updating
-	existsQuiz, err := d.quizRepo.Query(ctx).ByQuizID(inp.QuizID).WithQuizQuestion("").Result()
+	topics = append(topics, job.TOPIC_LEADERBOARD)
+	eventName = job.EVENT_QUIZ_UPDATED
+	handledQuiz, err = d.quizRepo.Query(ctx).ByQuizID(inp.QuizID).WithQuizQuestion("").Result()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "query quiz failed")
 		return nil, errors.InternalDefault(ctx)
 	}
-	if existsQuiz == nil {
+	if handledQuiz == nil {
 		d.logger.DebugCtx(ctx, "not found quiz")
 		return nil, errors.NotFound(ctx, model.LocKeyQuizNotFound)
 	}
 	// find question that removed from quiz
 	removedQuestions := make([]*model.QuizQuestion, 0)
-	for _, qQ := range existsQuiz.QuizQuestions {
+	for _, qQ := range handledQuiz.QuizQuestions {
 		found := false
 		for _, questionId := range inp.QuestionIDs {
 			if qQ.QuestionID == questionId {
@@ -113,38 +136,29 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 	}
 
 	// update quiz with new questions
-	existsQuiz.Title = inp.Title
-	existsQuiz.QuizQuestions = helper.MapList(existsQuestions, func(ques *model.Question) *model.QuizQuestion {
+	handledQuiz.Title = inp.Title
+	handledQuiz.QuizQuestions = helper.MapList(existsQuestions, func(ques *model.Question) *model.QuizQuestion {
 		return &model.QuizQuestion{
-			QuizID:     existsQuiz.QuizID,
+			QuizID:     handledQuiz.QuizID,
 			QuestionID: ques.QuestionID,
 			Question:   ques,
 		}
 	})
-	existsQuiz.UpdatedAt = now
+	handledQuiz.UpdatedAt = now
 
 	// update quiz and quiz questions
-	err = d.quizRepo.Upsert(ctx, existsQuiz)
+	err = d.quizRepo.Upsert(ctx, handledQuiz)
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "upsert quiz failed")
 		return nil, errors.InternalDefault(ctx)
 	}
 
-	err = d.quizQuestionRepo.BulkUpsert(ctx, existsQuiz.QuizQuestions)
+	err = d.quizQuestionRepo.BulkUpsert(ctx, handledQuiz.QuizQuestions)
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "bulk upsert quiz question failed")
 		return nil, errors.InternalDefault(ctx)
 	}
-
-	// Test push queue
-	payload, _ := json.Marshal(existsQuiz)
-	d.logger.DebugCtx(ctx, "PushJobGetQuizDetail: ", string(payload))
-	err = d.jobClient.PushJob(ctx, model.QuizTopic, payload)
-	if err != nil {
-		d.logger.ErrorCtx(ctx, err, "push job failed")
-		return nil, errors.InternalDefault(ctx)
-	}
-	return existsQuiz, nil
+	return handledQuiz, nil
 }
 
 func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionReq) (*model.Question, error) {

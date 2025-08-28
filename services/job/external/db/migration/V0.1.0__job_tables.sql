@@ -1,10 +1,17 @@
-CREATE TABLE IF NOT EXISTS job (
-    id TEXT NOT NULL,
-    name TEXT NOT NULL,
-    data JSONB,
-    last_run_status TEXT,
-    last_run_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    CONSTRAINT job_pkey PRIMARY KEY (id)
-);
+create table if not exists job
+(
+    id              text                                             not null
+    primary key,
+    name            text                                             not null,
+    data            jsonb,
+    status          text                     default 'PENDING'::text not null,
+    retry_count     integer                  default 0               not null,
+    last_run_status text,
+    last_error      text,
+    last_run_at     timestamp with time zone,
+    trace_id        text,
+    exchange        text,
+    routing_key     text,
+    created_at      timestamp with time zone default now()           not null,
+    updated_at      timestamp with time zone default now()           not null
+    );

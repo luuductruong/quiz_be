@@ -52,7 +52,7 @@ func Run() {
 	defer cancel()
 
 	// setup timeout for request
-	runtime.DefaultContextTimeout = 30 * time.Second // for example
+	runtime.DefaultContextTimeout = 60 * time.Second // for example
 
 	gMux := runtime.NewServeMux(
 		// https://grpc-ecosystem.github.io/grpc-gateway/docs/development/grpc-gateway_v2_migration_guide/

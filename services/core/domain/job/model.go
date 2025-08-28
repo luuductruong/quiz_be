@@ -12,6 +12,12 @@ type Job struct {
 	Data          []byte // sample
 	LastRunStatus string
 	LastRunAt     *time.Time
+	Status        string
+	RetryCount    int
+	LastError     string
+	TraceID       string
+	Exchange      string
+	RoutingKey    string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }

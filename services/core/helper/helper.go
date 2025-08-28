@@ -42,6 +42,12 @@ func NewStringUUID() string {
 	return uuid.New().String()
 }
 
+// NewStringUUIDV7 generates a new UUID version 7 and returns it as a string.
+func NewStringUUIDV7() string {
+	u, _ := uuid.NewV7()
+	return u.String()
+}
+
 // Unique ...
 func Unique[T comparable](arr []T) []T {
 	u := make([]T, 0)

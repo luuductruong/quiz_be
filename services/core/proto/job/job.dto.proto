@@ -15,8 +15,9 @@ message TestResp {
 }
 
 message PushJobReq {
-  string topic = 1;
-  bytes data = 2;
+  string name = 1;
+  repeated string topics = 2;
+  bytes data = 3;
 }
 
 message PushJobResp {
