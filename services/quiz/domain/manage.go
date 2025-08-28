@@ -45,15 +45,15 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 		if handledQuiz == nil || err != nil {
 			return
 		}
-		if len(topics) > 0 {
-			// push job
-			payload, _ := json.Marshal(handledQuiz)
-			d.logger.DebugCtx(ctx, "PushJobGetQuizDetail: ", string(payload))
-			err = d.jobClient.PushJob(ctx, eventName, topics, payload)
-			if err != nil {
-				d.logger.ErrorCtx(ctx, err, "push job failed")
-			}
-		}
+		d.pushJob(ctx, eventName, topics, &model.Quiz{
+			QuizID:        handledQuiz.QuizID,
+			Title:         handledQuiz.Title,
+			CreatedAt:     handledQuiz.CreatedAt,
+			UpdatedAt:     handledQuiz.UpdatedAt,
+			QuizQuestions: nil, // set null to quiz questions
+		})
+		topics = nil
+		eventName = ""
 	}()
 
 	now := time.Now()
@@ -181,7 +181,6 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 		return nil, errors.InvalidArgument(ctx, model.LocKeyInvalidScore)
 	}
 	var inpCorrectAnswer *model.Answer
-	validCorrectAnswer := false
 	mapAnswer := make(map[string]struct{})
 	for _, answer := range inp.Answers {
 		// check empty
@@ -197,16 +196,31 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 		mapAnswer[answer.Title] = struct{}{}
 		// check the correct answer title
 		if answer.Title == inp.CorrectAnswer {
-			validCorrectAnswer = true
 			inpCorrectAnswer = answer
 		}
 	}
-	if !validCorrectAnswer {
+	if inpCorrectAnswer == nil {
 		d.logger.DebugCtx(ctx, "invalid input correct answer")
 		return nil, errors.InvalidArgument(ctx, model.LocKeyNotFoundCorrectAnswer)
 	}
+	var err error
+	topics := []string{}
+	eventName := ""
+	handledQuestion := &model.Question{}
+	defer func() {
+		if handledQuestion == nil || err != nil {
+			return
+		}
+		// push job
+		d.pushJob(ctx, eventName, topics, handledQuestion)
+		// reset value
+		topics = nil
+		eventName = ""
+	}()
 	now := time.Now()
 	if inp.QuestionID == "" {
+		topics = append(topics, job.TOPIC_SEARCH)
+		eventName = job.EVENT_QUESTION_CREATED
 		// create new question
 		totalQuestion, err := d.questionRepo.Query(ctx).Count()
 		if err != nil {
@@ -214,7 +228,7 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 			return nil, errors.InternalDefault(ctx)
 		}
 		newID := helper.GenQuestionID(totalQuestion)
-		newQuestion := &model.Question{
+		handledQuestion = &model.Question{
 			QuestionID:    newID,
 			Content:       inp.Content,
 			Score:         inp.Score,
@@ -223,31 +237,32 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 			CreatedAt:     now,
 			UpdatedAt:     now,
 		}
-		err = d.questionRepo.Upsert(ctx, newQuestion)
+		err = d.questionRepo.Upsert(ctx, handledQuestion)
 		if err != nil {
 			d.logger.ErrorCtx(ctx, err, "upsert question failed")
 			return nil, errors.InternalDefault(ctx)
 		}
-		return newQuestion, nil
+		return handledQuestion, nil
 	}
 	// update exists question
-	existsQuestion, err := d.questionRepo.Query(ctx).ByQuestionID(inp.QuestionID).Result()
+	eventName = job.EVENT_QUESTION_UPDATED
+	handledQuestion, err = d.questionRepo.Query(ctx).ByQuestionID(inp.QuestionID).Result()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "query question failed")
 		return nil, errors.InternalDefault(ctx)
 	}
-	if existsQuestion == nil {
+	if handledQuestion == nil {
 		d.logger.DebugCtx(ctx, "question not found")
 		return nil, errors.NotFound(ctx, model.LocKeyQuestionNotFound)
 	}
 	// check content by title, score, correct answer
-	isContentChanged := inp.Content != existsQuestion.Content ||
-		inp.Score != existsQuestion.Score ||
-		inp.CorrectAnswer != existsQuestion.CorrectAnswer
+	isContentChanged := inp.Content != handledQuestion.Content ||
+		inp.Score != handledQuestion.Score ||
+		inp.CorrectAnswer != handledQuestion.CorrectAnswer
 	// check content of correct answer
 	if !isContentChanged {
-		existsCorrectAnswer, _ := helper.Find(existsQuestion.Answers, func(answer *model.Answer) bool {
-			return answer.Title == existsQuestion.CorrectAnswer
+		existsCorrectAnswer, _ := helper.Find(handledQuestion.Answers, func(answer *model.Answer) bool {
+			return answer.Title == handledQuestion.CorrectAnswer
 		})
 		if existsCorrectAnswer == nil {
 			isContentChanged = true
@@ -268,17 +283,17 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 		}
 	}
 	// update
-	existsQuestion.Content = inp.Content
-	existsQuestion.Score = inp.Score
-	existsQuestion.CorrectAnswer = inp.CorrectAnswer
-	existsQuestion.Answers = inp.Answers
-	existsQuestion.UpdatedAt = now
-	err = d.questionRepo.Upsert(ctx, existsQuestion)
+	handledQuestion.Content = inp.Content
+	handledQuestion.Score = inp.Score
+	handledQuestion.CorrectAnswer = inp.CorrectAnswer
+	handledQuestion.Answers = inp.Answers
+	handledQuestion.UpdatedAt = now
+	err = d.questionRepo.Upsert(ctx, handledQuestion)
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "upsert question failed")
 		return nil, err
 	}
-	return existsQuestion, nil
+	return handledQuestion, nil
 }
 
 func (d *domain) clearLeaderboard(ctx context.Context, quizId string) error {
@@ -298,4 +313,26 @@ func (d *domain) clearLeaderboard(ctx context.Context, quizId string) error {
 		return errors.InternalDefault(ctx)
 	}
 	return nil
+}
+
+func (d *domain) pushJob(ctx context.Context, name string, topics []string, data any) {
+	d.logger.DebugCtx(ctx, "pushJob")
+	if name == "" {
+		d.logger.DebugCtx(ctx, "name is empty")
+		return
+	}
+	if len(topics) == 0 {
+		d.logger.DebugCtx(ctx, "topics is empty")
+		return
+	}
+	payload, err := json.Marshal(data)
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "marshal payload failed")
+		return
+	}
+	err = d.jobClient.PushJob(ctx, name, topics, payload)
+	if err != nil {
+		d.logger.ErrorCtx(ctx, err, "push job failed")
+	}
+	return
 }
