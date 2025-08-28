@@ -325,6 +325,9 @@
         }
       }
     },
+    "dtoPushJobResp": {
+      "type": "object"
+    },
     "dtoSelectedQuestionAnswer": {
       "type": "object",
       "properties": {

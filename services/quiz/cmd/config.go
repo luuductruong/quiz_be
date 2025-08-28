@@ -13,4 +13,7 @@ type Config struct {
 	I18n     *i18n.Config         `config:"i18n"`
 	DataBase *db.Config           `config:"database"`
 	PubSub   *config.PubSubConfig `config:"pubsub"`
+
+	// client
+	Job *config.Client `config:"job"`
 }

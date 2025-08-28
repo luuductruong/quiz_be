@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS job (
+    id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    data JSONB,
+    last_run_status TEXT,
+    last_run_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT job_pkey PRIMARY KEY (id)
+);

@@ -17,7 +17,7 @@ database:
   port: 5432
   user: quiz_be
   password: quiz_be
-  dbname: quiz
+  dbname: job
   ssl: false
 
 pubsub:

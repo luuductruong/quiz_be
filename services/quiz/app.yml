@@ -1,6 +1,9 @@
 grpc:
   host: localhost
   port: 8001
+job:
+  host: localhost
+  port: 8002
 
 logger:
   output: stdout

@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type JobServiceClient interface {
 	Test(ctx context.Context, in *dto.TestReq, opts ...grpc.CallOption) (*dto.TestResp, error)
+	PushJob(ctx context.Context, in *dto.PushJobReq, opts ...grpc.CallOption) (*dto.PushJobResp, error)
 }
 
 type jobServiceClient struct {
@@ -43,11 +44,21 @@ func (c *jobServiceClient) Test(ctx context.Context, in *dto.TestReq, opts ...gr
 	return out, nil
 }
 
+func (c *jobServiceClient) PushJob(ctx context.Context, in *dto.PushJobReq, opts ...grpc.CallOption) (*dto.PushJobResp, error) {
+	out := new(dto.PushJobResp)
+	err := c.cc.Invoke(ctx, "/service.JobService/PushJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // JobServiceServer is the server API for JobService service.
 // All implementations must embed UnimplementedJobServiceServer
 // for forward compatibility
 type JobServiceServer interface {
 	Test(context.Context, *dto.TestReq) (*dto.TestResp, error)
+	PushJob(context.Context, *dto.PushJobReq) (*dto.PushJobResp, error)
 	mustEmbedUnimplementedJobServiceServer()
 }
 
@@ -57,6 +68,9 @@ type UnimplementedJobServiceServer struct {
 
 func (UnimplementedJobServiceServer) Test(context.Context, *dto.TestReq) (*dto.TestResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Test not implemented")
+}
+func (UnimplementedJobServiceServer) PushJob(context.Context, *dto.PushJobReq) (*dto.PushJobResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PushJob not implemented")
 }
 func (UnimplementedJobServiceServer) mustEmbedUnimplementedJobServiceServer() {}
 
@@ -89,6 +103,24 @@ func _JobService_Test_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _JobService_PushJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dto.PushJobReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobServiceServer).PushJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.JobService/PushJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobServiceServer).PushJob(ctx, req.(*dto.PushJobReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // JobService_ServiceDesc is the grpc.ServiceDesc for JobService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -99,6 +131,10 @@ var JobService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Test",
 			Handler:    _JobService_Test_Handler,
+		},
+		{
+			MethodName: "PushJob",
+			Handler:    _JobService_PushJob_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

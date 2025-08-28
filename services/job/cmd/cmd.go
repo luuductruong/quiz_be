@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/quiz_be/services/core/domain/job"
 	"github.com/quiz_be/services/core/infra/factory"
+	"github.com/quiz_be/services/job/external/repository"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"
@@ -52,6 +53,7 @@ func Run() {
 
 	jobDomain = domain.NewDomain(&domain.JobDomainParam{
 		Publisher: psClient.Publisher(),
+		JobRepo:   repository.NewJobRepo(),
 	})
 	grpcHandler = handler.NewHandler(jobDomain)
 	appSubscriber = pubsub.NewAppSubscriber(psClient.Subscriber(), appConfig.PubSub.Subscription, nil)

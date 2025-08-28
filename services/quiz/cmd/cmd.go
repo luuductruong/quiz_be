@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	jobClient "github.com/quiz_be/services/core/client/job"
 	"github.com/quiz_be/services/core/domain/quiz"
 	"github.com/quiz_be/services/core/infra/factory"
+	grpcHelper "github.com/quiz_be/services/core/infra/grpc"
 	"github.com/quiz_be/services/quiz/application/subscriber"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -50,6 +52,12 @@ func Run() {
 	if err != nil {
 		logger.Default.Panic("can't connect to pubsub: ", err)
 	}
+	//client connect
+	jobConn, err := grpcHelper.NewClient(appConfig.Job)
+	if err != nil {
+		logger.Default.Panic("can't connect to job service: ", err)
+	}
+	jobService := jobClient.NewService(jobConn)
 
 	quizDomain = domain.NewDomain(&domain.QuizDomainParam{
 		QuizRepo:         repo.NewQuizRepo(),
@@ -59,6 +67,7 @@ func Run() {
 		UserAnswerRepo:   repo.NewUserAnswerRepo(),
 		ScoreRepo:        repo.NewScoreRepo(),
 		Publisher:        psClient.Publisher(),
+		JobClient:        jobService,
 	})
 	grpcHandler = handler.NewHandler(quizDomain)
 	appSubscriber = pubsub.NewAppSubscriber(psClient.Subscriber(), appConfig.PubSub.Subscription, nil)
