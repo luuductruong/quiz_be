@@ -18,7 +18,7 @@ func MapQuizFromDomain(source *quiz.Quiz) *model.Quiz {
 	}
 }
 
-func questionsFromQuizQuestions(source []*quiz.QuizQuestion) []*quiz.Question {
+func questionsFromQuizQuestions(source []*quiz.QuestionQuiz) []*quiz.Question {
 	rs := make([]*quiz.Question, 0)
 	for _, quizQuestion := range source {
 		if quizQuestion.Question != nil {

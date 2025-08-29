@@ -5,7 +5,7 @@ import "time"
 type Quiz struct {
 	QuizID        string `json:"quiz_id"`
 	Title         string `json:"title"`
-	QuizQuestions []*QuizQuestion
+	QuizQuestions []*QuestionQuiz
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
@@ -20,9 +20,9 @@ type Question struct {
 	UpdatedAt     time.Time
 }
 
-type QuizQuestion struct {
-	QuizID     string
+type QuestionQuiz struct {
 	QuestionID string
+	QuizID     string
 	Question   *Question
 }
 

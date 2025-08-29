@@ -13,6 +13,7 @@ type ManageQuestionReq struct {
 	CorrectAnswer string    `json:"correct_answer"`
 	Answers       []*Answer `json:"answers"`
 }
+
 type SubmitAnswerReq struct {
 	UserID        string                    `json:"user_id"`
 	QuizID        string                    `json:"quiz_id"`

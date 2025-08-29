@@ -31,7 +31,7 @@ func (d *domain) SubmitAnswer(ctx context.Context, inp *model.SubmitAnswerReq) (
 	// find existsQuiz
 	existsQuiz, err := d.quizRepo.Query(ctx).
 		ByQuizID(inp.QuizID).
-		WithQuizQuestion(""). // embed a question to quiz_question, insert "" to get all QuizQuestion
+		WithQuizQuestion(""). // embed a question to quiz_question, insert "" to get all QuestionQuiz
 		Result()
 	if err != nil {
 		d.logger.ErrorCtx(ctx, err, "query fail")
@@ -68,7 +68,7 @@ func (d *domain) processUserAnswer(
 		d.logger.ErrorCtx(ctx, err, "query user answer failed")
 		return errors.InternalDefault(ctx)
 	}
-	questions := helper.MapList(existsQuiz.QuizQuestions, func(q *model.QuizQuestion) *model.Question {
+	questions := helper.MapList(existsQuiz.QuizQuestions, func(q *model.QuestionQuiz) *model.Question {
 		return q.Question
 	})
 	totalScoreChange := 0

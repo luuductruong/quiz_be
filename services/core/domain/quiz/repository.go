@@ -41,7 +41,7 @@ type QuestionQuery interface {
 }
 
 type QuizQuestionRepo interface {
-	BulkUpsert(ctx context.Context, quizQuestion []*QuizQuestion) error
+	BulkUpsert(ctx context.Context, quizQuestion []*QuestionQuiz) error
 	Query(ctx context.Context) QuizQuestionQuery
 }
 
@@ -51,8 +51,8 @@ type QuizQuestionQuery interface {
 	ByQuestionID(questionID string) QuizQuestionQuery
 	Limit(limit int) QuizQuestionQuery
 	// result
-	Result() (*QuizQuestion, error)
-	ResultList() ([]*QuizQuestion, error)
+	Result() (*QuestionQuiz, error)
+	ResultList() ([]*QuestionQuiz, error)
 }
 
 type UserRepo interface {
@@ -79,6 +79,7 @@ type UserAnswerQuery interface {
 	ByUserID(userID string) UserAnswerQuery
 	ByQuizID(quizID string) UserAnswerQuery
 	ByQuestionID(questionID string) UserAnswerQuery
+	ByListQuestionID(questionIDs ...string) UserAnswerQuery
 	// result
 	Result() (*UserAnswer, error)
 	ResultList() ([]*UserAnswer, error)

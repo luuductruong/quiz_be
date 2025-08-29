@@ -95,6 +95,10 @@ func (ua *userAnswerQuery) ByQuestionID(questionID string) quizDomain.UserAnswer
 	return query.Where(ua, "question_id = ?", questionID)
 }
 
+func (ua *userAnswerQuery) ByListQuestionID(questionIDs ...string) quizDomain.UserAnswerQuery {
+	return query.Where(ua, "question_id in ?", questionIDs)
+}
+
 func (ua *userAnswerQuery) Result() (*quizDomain.UserAnswer, error) {
 	return query.Result(ua, mapUserAnswerToDomain)
 }

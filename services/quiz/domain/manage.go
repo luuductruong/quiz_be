@@ -11,7 +11,7 @@ import (
 	"github.com/quiz_be/services/core/helper"
 )
 
-func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*model.Quiz, error) {
+func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (handledQuiz *model.Quiz, err error) {
 	d.logger.DebugCtx(ctx, "ManageQuiz: ", inp.QuizID, " localize: ", ctx.GetLocale())
 	if inp.Title == "" {
 		d.logger.DebugCtx(ctx, "invalid input title")
@@ -40,7 +40,6 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 	}
 	topics := []string{}
 	eventName := ""
-	var handledQuiz *model.Quiz
 	defer func() {
 		if handledQuiz == nil || err != nil {
 			return
@@ -71,8 +70,8 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 		handledQuiz = &model.Quiz{
 			QuizID: newID,
 			Title:  inp.Title,
-			QuizQuestions: helper.MapList(existsQuestions, func(ques *model.Question) *model.QuizQuestion {
-				return &model.QuizQuestion{
+			QuizQuestions: helper.MapList(existsQuestions, func(ques *model.Question) *model.QuestionQuiz {
+				return &model.QuestionQuiz{
 					QuizID:     newID,
 					QuestionID: ques.QuestionID,
 					Question:   ques,
@@ -108,7 +107,7 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 		return nil, errors.NotFound(ctx, model.LocKeyQuizNotFound)
 	}
 	// find question that removed from quiz
-	removedQuestions := make([]*model.QuizQuestion, 0)
+	removedQuestionIDs := []string{}
 	for _, qQ := range handledQuiz.QuizQuestions {
 		found := false
 		for _, questionId := range inp.QuestionIDs {
@@ -118,18 +117,18 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 			}
 		}
 		if !found {
-			removedQuestions = append(removedQuestions, qQ)
+			removedQuestionIDs = append(removedQuestionIDs, qQ.QuestionID)
 		}
 	}
 
 	// check removed questions for answer history
-	for _, qQ := range removedQuestions {
-		existsAnswer, err := d.userAnswerRepo.Query(ctx).ByQuizID(inp.QuizID).ByQuestionID(qQ.QuestionID).Result()
+	if len(removedQuestionIDs) > 0 {
+		existsAnswer, err := d.userAnswerRepo.Query(ctx).ByQuizID(inp.QuizID).ByListQuestionID(removedQuestionIDs...).ResultList()
 		if err != nil {
 			d.logger.ErrorCtx(ctx, err, "query user answer failed")
 			return nil, errors.InternalDefault(ctx)
 		}
-		if existsAnswer != nil {
+		if len(existsAnswer) > 0 {
 			d.logger.DebugCtx(ctx, "question has answer history, can't remove")
 			return nil, errors.FailedPreCondition(ctx, model.LocKeyQuizQuestionHaveHistory)
 		}
@@ -137,8 +136,8 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 
 	// update quiz with new questions
 	handledQuiz.Title = inp.Title
-	handledQuiz.QuizQuestions = helper.MapList(existsQuestions, func(ques *model.Question) *model.QuizQuestion {
-		return &model.QuizQuestion{
+	handledQuiz.QuizQuestions = helper.MapList(existsQuestions, func(ques *model.Question) *model.QuestionQuiz {
+		return &model.QuestionQuiz{
 			QuizID:     handledQuiz.QuizID,
 			QuestionID: ques.QuestionID,
 			Question:   ques,
@@ -161,7 +160,7 @@ func (d *domain) ManageQuiz(ctx context.Context, inp *model.ManageQuizReq) (*mod
 	return handledQuiz, nil
 }
 
-func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionReq) (*model.Question, error) {
+func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionReq) (handledQuestion *model.Question, err error) {
 	d.logger.DebugCtx(ctx, "ManageQuestion: ", inp.QuestionID)
 	//validate input
 	if inp.Content == "" {
@@ -203,10 +202,8 @@ func (d *domain) ManageQuestion(ctx context.Context, inp *model.ManageQuestionRe
 		d.logger.DebugCtx(ctx, "invalid input correct answer")
 		return nil, errors.InvalidArgument(ctx, model.LocKeyNotFoundCorrectAnswer)
 	}
-	var err error
 	topics := []string{}
 	eventName := ""
-	handledQuestion := &model.Question{}
 	defer func() {
 		if handledQuestion == nil || err != nil {
 			return

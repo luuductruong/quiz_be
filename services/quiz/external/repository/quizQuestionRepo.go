@@ -12,18 +12,18 @@ type quizQuestionGorm struct {
 	Question   *questionGrom `gorm:"foreignKey:QuestionID;references:QuestionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
 
-func mapQuizQuestionToDomain(source *quizQuestionGorm) *quizDomain.QuizQuestion {
+func mapQuizQuestionToDomain(source *quizQuestionGorm) *quizDomain.QuestionQuiz {
 	if source == nil {
 		return nil
 	}
-	return &quizDomain.QuizQuestion{
+	return &quizDomain.QuestionQuiz{
 		QuizID:     source.QuizID,
 		QuestionID: source.QuestionID,
 		Question:   mapQuestionToDomain(source.Question),
 	}
 }
 
-func mapQuizQuestionFromDomain(source *quizDomain.QuizQuestion) *quizQuestionGorm {
+func mapQuizQuestionFromDomain(source *quizDomain.QuestionQuiz) *quizQuestionGorm {
 	if source == nil {
 		return nil
 	}
@@ -49,7 +49,7 @@ type quizQuestionQuery struct {
 	query.BaseQuery
 }
 
-func (q *quizQuestionRepo) BulkUpsert(ctx context.Context, quizQuestion []*quizDomain.QuizQuestion) error {
+func (q *quizQuestionRepo) BulkUpsert(ctx context.Context, quizQuestion []*quizDomain.QuestionQuiz) error {
 	if len(quizQuestion) == 0 {
 		return nil
 	}
@@ -72,10 +72,10 @@ func (q *quizQuestionQuery) Limit(limit int) quizDomain.QuizQuestionQuery {
 	return query.Limit(q, limit)
 }
 
-func (q *quizQuestionQuery) Result() (*quizDomain.QuizQuestion, error) {
+func (q *quizQuestionQuery) Result() (*quizDomain.QuestionQuiz, error) {
 	return query.Result(q, mapQuizQuestionToDomain)
 }
 
-func (q *quizQuestionQuery) ResultList() ([]*quizDomain.QuizQuestion, error) {
+func (q *quizQuestionQuery) ResultList() ([]*quizDomain.QuestionQuiz, error) {
 	return query.ResultList(q, mapQuizQuestionToDomain)
 }
