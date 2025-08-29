@@ -46,7 +46,7 @@ func (h *handler) ManageQuestion(ctx context.Context, req *dto.ManageQuestionReq
 	if err != nil {
 		return nil, err
 	}
-	return dto.MapQuestionFromDomain(question), nil
+	return dto.AdminMapQuestionFromDomain(question), nil
 }
 
 func (h *handler) SubmitAnswer(ctx context.Context, req *dto.SubmitAnswerReq) (*dto.SubmitAnswerRes, error) {
